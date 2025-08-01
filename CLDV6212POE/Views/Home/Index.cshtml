@@ -1,8 +1,24 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+	ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+<div class="home-container">
+    <video autoplay muted loop id="background-video">
+        <source src="https://cldv6212st10265742.blob.core.windows.net/background/background.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+	<div class="overlay">
+		<div class="content text-center">
+			<h1>ABC Retail</h1>
+            <p>Smart Storage. Seamless Shopping. Scalable Solutions</p>
+            <a asp-controller="Customer" asp-action="Index" class="btn btn-primary btn-lg">
+                Customer Profiles
+            </a>
+			<a asp-controller="Product" asp-action="Index" class="btn btn-primary btn-lg">
+                Product Information
+            </a>
+		</div>
+	</div>
 </div>

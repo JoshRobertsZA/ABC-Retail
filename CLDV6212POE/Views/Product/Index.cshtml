@@ -1,0 +1,122 @@
+﻿@model List<CLDV6212POE.Models.Entities.ProductInfo>
+
+@{
+    ViewData["Title"] = "Product Information";
+}
+
+<style>
+    .product-card {
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+        text-align: center;
+        padding: 20px;
+        background: white;
+    }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }   
+
+    .product-image {
+        height: 150px;
+        object-fit: contain;
+        margin-bottom: 15px;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+    }
+
+    .product-price {
+        font-size: 20px;
+        font-weight: bold;
+        color: #FF5722;
+    }
+
+    .btn-add {
+        background-color: #FFC107;
+        border: none;
+        color: white;
+        font-weight: bold;
+    }
+
+        .btn-add:hover {
+            background-color: #FFA000;
+        }
+
+    .rating-stars {
+        color: gold;
+        margin-bottom: 10px;
+    }
+
+    .product-meta {
+        font-size: 14px;
+        color: #777;
+        margin-bottom: 5px;
+    }
+
+    .meta-item i {
+        font-size: 1.2rem;
+        margin-bottom: 4px;
+        color: #666;
+    }
+
+    .meta-item span {
+        font-size: 0.85rem;
+        text-align: center;
+    }
+</style>
+
+<div class="product-container">
+    <div class="container mt-5">
+        <a href="@Url.Action("Add", "Product")" class="btn btn-success mb-4">Add New Product</a>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+        <div class="product-grid">
+            @foreach (var product in Model)
+            {
+                <div class="product-card">
+                    <img src="@(!string.IsNullOrEmpty(product.ImageUrl) ? product.ImageUrl : "https://cldv6212st10265742.blob.core.windows.net/productimages/defaultimg.jpg")"
+                         class="product-image img-fluid"
+                         alt="@product.ProductName" />
+
+
+
+                    <h5>@product.ProductName</h5>
+
+                    <p class="text-muted">@product.Description</p>
+
+                    <div class="product-price">@product.Price</div>
+
+                    <div class="product-meta-row d-flex flex-column align-items-center mt-3 mb-2 small">
+                        <div class="d-flex gap-4 justify-content-center">
+                            <div class="meta-item d-flex flex-column align-items-center text-center">
+                                <i class="bi bi-tag"></i>
+                                <span>@product.Category</span>
+                            </div>
+                            <div class="meta-item d-flex flex-column align-items-center text-center">
+                                <i class="bi bi-box"></i>
+                                <span>@product.StockQuantity in stock</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-2 mt-3">
+                        <a href="@Url.Action("Edit", "Product", new { partitionKey = product.PartitionKey, rowKey = product.RowKey })"
+                           class="btn btn-sm btn-primary">
+                            Edit
+                        </a>
+                        <a href="@Url.Action("Delete", "Product", new { partitionKey = product.PartitionKey, rowKey = product.RowKey })"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Are you sure you want to delete this customer?');">
+                            Delete
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+        <div style="height: 100px;"></div>
+    </div>
+</div>
