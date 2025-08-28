@@ -1,5 +1,4 @@
-﻿using Azure.Data.Tables;
-using CLDV6212POE.Models.Entities;
+﻿using CLDV6212POE.Models.Entities;
 using CLDV6212POE.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +9,8 @@ namespace CLDV6212POE.Controllers
         private readonly TableStorageService<ProductInfo> _tableStorage;
         private readonly QueueStorageService<ProductInfo> _queueService;
 
-        public ProductController(TableStorageService<ProductInfo> tableStorage, QueueStorageService<ProductInfo> queueStorage)
+        public ProductController(TableStorageService<ProductInfo> tableStorage,
+            QueueStorageService<ProductInfo> queueStorage)
         {
             _tableStorage = tableStorage;
             _queueService = queueStorage;
@@ -44,8 +44,6 @@ namespace CLDV6212POE.Controllers
 
             var newProduct = new ProductInfo
             {
-                PartitionKey = "Product",
-                RowKey = Guid.NewGuid().ToString(),
                 ProductName = productName,
                 Description = description,
                 Price = price,
@@ -96,8 +94,8 @@ namespace CLDV6212POE.Controllers
             }
 
             await _queueService.SendMessageAsync($"Product: {existing.ProductName} has been altered");
-
             await _tableStorage.UpdateEntityAsync(existing);
+
             return RedirectToAction("Index");
         }
 

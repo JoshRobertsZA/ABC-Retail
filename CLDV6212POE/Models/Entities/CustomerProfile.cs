@@ -6,9 +6,9 @@ namespace CLDV6212POE.Models.Entities
 {
     public class CustomerProfile : ITableEntity
     {
-        public string PartitionKey { get; set; } = string.Empty;
+        public string PartitionKey { get; set; } = "Customer";
 
-        public string RowKey { get; set; } = string.Empty;
+        public string RowKey { get; set; } = Guid.NewGuid().ToString();
 
         public DateTimeOffset? Timestamp { get; set; }
 

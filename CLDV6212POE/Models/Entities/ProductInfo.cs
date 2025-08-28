@@ -7,7 +7,7 @@ namespace CLDV6212POE.Models.Entities
     {
         public string PartitionKey { get; set; } = "Product";
 
-        public string RowKey { get; set; } 
+        public string RowKey { get; set; } = Guid.NewGuid().ToString();
 
         public string ProductName { get; set; }
 

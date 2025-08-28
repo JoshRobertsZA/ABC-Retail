@@ -4,70 +4,96 @@
     ViewData["Title"] = "Add Product";
 }
 
-<div class="customer-container">
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-lg rounded">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">@ViewData["Title"]</h4>
+<div class="edit-container">
+    <div class="container py-5 mt-5">
+        <div class="row justify-content-center">
+            <form asp-action="Add" method="post" enctype="multipart/form-data" class="row g-3">
+
+                <!-- Left Container -->
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+
+                            <!-- Image Preview -->
+                            <img id="imagePreview"
+                                 src="https://cldv6212st10265742.blob.core.windows.net/productimages/defaultimg.png"
+                                 alt="Product Image"
+                                 class="img-fluid rounded-circle mb-3"
+                                 style="width: 150px; height: 150px; object-fit: cover;"/>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Upload Image</label>
+                                <input type="file" name="image" class="form-control" id="imageInput" accept="image/*"/>
+                            </div>
+
+                            <p class="text-muted small">Max image size 50MB</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form asp-action="Add" method="post" enctype="multipart/form-data" class="mt-4">
-                        <div class="mb-3">
-                            <label asp-for="ProductName" class="form-label fw-bold"></label>
-                            <input asp-for="ProductName" class="form-control" />
-                            <span asp-validation-for="ProductName" class="text-danger"></span>
-                        </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Description" class="form-label fw-bold"></label>
-                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
+                <!-- Right Container -->
+                <div class="col-md-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white border-bottom">
+                            <h4 class="mb-0">Add Product</h4>
                         </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="ProductName" class="form-label"></label>
+                                    <input asp-for="ProductName" class="form-control"/>
+                                    <span asp-validation-for="ProductName" class="text-danger"></span>
+                                </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Price" class="form-label fw-bold"></label>
-                            <input asp-for="Price" class="form-control" />
-                            <span asp-validation-for="Price" class="text-danger"></span>
-                        </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Category" class="form-label"></label>
+                                    <input asp-for="Category" class="form-control"/>
+                                    <span asp-validation-for="Category" class="text-danger"></span>
+                                </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Category" class="form-label fw-bold"></label>
-                            <input asp-for="Category" class="form-control" />
-                            <span asp-validation-for="Category" class="text-danger"></span>
-                        </div>
+                                <div class="col-md-12">
+                                    <label asp-for="Description" class="form-label"></label>
+                                    <textarea asp-for="Description" class="form-control"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
 
-                        <div class="mb-3">
-                            <label asp-for="StockQuantity" class="form-label fw-bold"></label>
-                            <input asp-for="StockQuantity" class="form-control" type="number" min="0" />
-                            <span asp-validation-for="StockQuantity" class="text-danger"></span>
-                            <span asp-validation-for="StockQuantity" class="text-danger"></span>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="image" class="form-label">Product Image</label>
-                            <input type="file" name="image" class="form-control" />
-                        </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Price" class="form-label"></label>
+                                    <input asp-for="Price" class="form-control"/>
+                                    <span asp-validation-for="Price" class="text-danger"></span>
+                                </div>
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-success">➕ Add Product</button>
+                                <div class="col-md-6">
+                                    <label asp-for="StockQuantity" class="form-label"></label>
+                                    <input asp-for="StockQuantity" class="form-control" type="number"/>
+                                    <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-success">Add Product</button>
+                                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
 
-            <div class="text-center mt-3">
-                <a asp-controller="Product" asp-action="Index" class="btn btn-outline-secondary">
-                    ← Back to Product List
-                </a>
-            </div>
+            </form>
         </div>
     </div>
 </div>
 
-</div>
-
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('imageInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 }

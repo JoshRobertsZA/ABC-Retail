@@ -1,10 +1,7 @@
 ﻿using Azure.Storage.Files.Shares;
-using Azure.Storage.Files.Shares.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 
 public class FileStorageService
 {
@@ -17,8 +14,20 @@ public class FileStorageService
     }
 
 
+    /// <summary>
+    ///     Uploads a file into the contracts share.
+    /// </summary>
     public async Task UploadFileAsync(IFormFile file)
     {
+        if (file == null || file.Length == 0)
+            throw new ArgumentException("No file uploaded.");
+
+        var allowedExtensions = new[] { ".pdf", ".docx", ".txt" };
+        var extension = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+
+        if (string.IsNullOrEmpty(extension) || !allowedExtensions.Contains(extension))
+            throw new ArgumentException("Invalid file type. Only PDF, DOCX, and TXT files are allowed.");
+
         var share = new ShareClient(_connectionString, _shareName);
         await share.CreateIfNotExistsAsync();
 
@@ -31,6 +40,10 @@ public class FileStorageService
     }
 
 
+    /// <summary>
+    ///     Lists all file names inside the contracts share.
+    /// </summary>
+    /// >
     public async Task<List<string>> ListFilesAsync()
     {
         var share = new ShareClient(_connectionString, _shareName);
@@ -38,18 +51,17 @@ public class FileStorageService
 
         var files = new List<string>();
 
-        await foreach (ShareFileItem item in rootDir.GetFilesAndDirectoriesAsync())
-        {
+        await foreach (var item in rootDir.GetFilesAndDirectoriesAsync())
             if (!item.IsDirectory)
-            {
                 files.Add(item.Name);
-            }
-        }
 
         return files;
     }
 
 
+    /// <summary>
+    ///     Downloads a file from the contracts share as a stream.
+    /// </summary>
     public async Task<Stream> DownloadFileAsync(string fileName)
     {
         var share = new ShareClient(_connectionString, _shareName);
@@ -58,5 +70,18 @@ public class FileStorageService
 
         var download = await fileClient.DownloadAsync();
         return download.Value.Content;
+    }
+
+
+    /// <summary>
+    ///     Deletes a file from the contracts share.
+    /// </summary>
+    public async Task DeleteFileAsync(string fileName)
+    {
+        var share = new ShareClient(_connectionString, _shareName);
+        var rootDir = share.GetRootDirectoryClient();
+        var fileClient = rootDir.GetFileClient(fileName);
+
+        await fileClient.DeleteIfExistsAsync();
     }
 }

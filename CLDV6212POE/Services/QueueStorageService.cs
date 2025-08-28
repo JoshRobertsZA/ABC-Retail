@@ -1,5 +1,4 @@
 ﻿using Azure.Storage.Queues;
-using System.Text.Json;
 
 public class QueueStorageService<T>
 {
@@ -12,11 +11,12 @@ public class QueueStorageService<T>
     }
 
 
+    /// <summary>
+    /// Sends a message to the queue.
+    /// Automatically serializes objects to JSON.
+    /// </summary>
     public async Task SendMessageAsync(string message)
     {
         await _queueClient.SendMessageAsync(message);
     }
-
-
-    //Peek method
 }

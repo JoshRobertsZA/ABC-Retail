@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using CLDV6212POE.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace CLDV6212POE.Controllers
 {

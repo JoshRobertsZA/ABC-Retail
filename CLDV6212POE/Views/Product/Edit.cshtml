@@ -4,68 +4,85 @@
     ViewData["Title"] = "Edit Product";
 }
 
-<h2>Edit Product</h2>
+<div class="edit-container">
+    <div class="container py-5 mt-5">
+        <div class="row justify-content-center">
 
-<form asp-action="Edit" method="post" enctype="multipart/form-data">
-    <!-- Required hidden keys for Azure Table -->
-    <input type="hidden" asp-for="PartitionKey" />
-    <input type="hidden" asp-for="RowKey" />
-    <input type="hidden" asp-for="ETag" />
+            <!-- ✅ One single form -->
+            <form asp-action="Edit" asp-controller="Product" method="post" enctype="multipart/form-data" class="row">
 
-    <div class="form-group mb-3">
-        <label asp-for="ProductName"></label>
-        <input asp-for="ProductName" class="form-control" />
-        <span asp-validation-for="ProductName" class="text-danger"></span>
-    </div>
+                <!-- Left Container -->
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.ProductName</h5>
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <img src="@Model.ImageUrl" alt="Product Image" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;" />
+                            }
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Upload New Image</label>
+                                <input type="file" name="image" class="form-control" />
+                            </div>
+                            <p class="text-muted small">Max image size 50MB</p>
+                            <p class="text-muted small">Created: @Model.CreatedDate.ToString("dd MMM yyyy")</p>
+                        </div>
+                    </div>
+                </div>
 
-    <div class="form-group mb-3">
-        <label asp-for="Description"></label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
+                <!-- Right Container -->
+                <div class="col-md-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white border-bottom">
+                            <h4 class="mb-0">Edit Product</h4>
+                        </div>
+                        <div class="card-body">
+                            <!-- Hidden keys -->
+                            <input type="hidden" asp-for="PartitionKey" />
+                            <input type="hidden" asp-for="RowKey" />
+                            <input type="hidden" asp-for="ETag" />
 
-    <div class="form-group mb-3">
-        <label asp-for="Price"></label>
-        <input asp-for="Price" class="form-control" />
-        <span asp-validation-for="Price" class="text-danger"></span>
-    </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="ProductName" class="form-label"></label>
+                                    <input asp-for="ProductName" class="form-control" />
+                                    <span asp-validation-for="ProductName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Category" class="form-label"></label>
+                                    <input asp-for="Category" class="form-control" />
+                                    <span asp-validation-for="Category" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-12">
+                                    <label asp-for="Description" class="form-label"></label>
+                                    <textarea asp-for="Description" class="form-control"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Price" class="form-label"></label>
+                                    <input asp-for="Price" class="form-control" />
+                                    <span asp-validation-for="Price" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="StockQuantity" class="form-label"></label>
+                                    <input asp-for="StockQuantity" class="form-control" />
+                                    <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="CreatedDate" class="form-label">Created Date</label>
+                                    <input asp-for="CreatedDate" class="form-control" type="datetime-local" readonly />
+                                </div>
+                            </div>
 
-    <div class="form-group mb-3">
-        <label asp-for="Category"></label>
-        <input asp-for="Category" class="form-control" />
-        <span asp-validation-for="Category" class="text-danger"></span>
-    </div>
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-danger">Update</button>
+                                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <div class="form-group mb-3">
-        <label asp-for="StockQuantity"></label>
-        <input asp-for="StockQuantity" class="form-control" />
-        <span asp-validation-for="StockQuantity" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="CreatedDate">Created Date</label>
-        <input asp-for="CreatedDate" class="form-control" type="datetime-local" readonly />
-    </div>
-
-    <div class="form-group mb-3">
-        <label>Upload New Image</label>
-        <input type="file" name="image" class="form-control" />
-    </div>
-
-    @if (!string.IsNullOrEmpty(Model.ImageUrl))
-    {
-        <div class="mb-3">
-            <label>Current Image:</label><br />
-            <img src="@Model.ImageUrl" alt="Product Image" class="img-thumbnail" style="max-width: 200px;" />
+            </form>
         </div>
-    }
-
-    <button type="submit" class="btn btn-primary">Update</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-</form>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
+    </div>
+</div>

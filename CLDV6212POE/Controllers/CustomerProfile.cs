@@ -1,8 +1,6 @@
-﻿using Azure.Data.Tables;
-using CLDV6212POE.Models.Entities;
+﻿using CLDV6212POE.Models.Entities;
 using CLDV6212POE.Services;
 using Microsoft.AspNetCore.Mvc;
-using System;
 
 namespace CLDV6212POE.Controllers
 {
@@ -37,10 +35,7 @@ namespace CLDV6212POE.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(CustomerProfile customer)
         {
-            customer.PartitionKey = "Customer";
-            customer.RowKey = Guid.NewGuid().ToString();
             customer.DateOfBirth = DateTime.SpecifyKind(customer.DateOfBirth.DateTime, DateTimeKind.Utc);
-
 
             await _tableStorage.AddEntityAsync(customer);
             return RedirectToAction("Index");
