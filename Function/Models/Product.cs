@@ -1,9 +1,9 @@
 ﻿using Azure;
 using Azure.Data.Tables;
 
-namespace CLDV6212POE.Models.Entities
+namespace Function.Models
 {
-    public class ProductInfo : ITableEntity
+    public class Product : ITableEntity
     {
         public string PartitionKey { get; set; } = "Product";
 

@@ -1,0 +1,87 @@
+﻿@model List<Function.Models.Order>
+
+@{
+    ViewData["Title"] = "Orders";
+}
+
+<div class="order">
+    <div class="order-container">
+        <div class="container py-5">
+            <a href="@Url.Action("Create", "Order")" class="btn btn-success mb-4">Create Order</a>
+
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert alert-success">@TempData["Message"]</div>
+            }
+            else if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <div class="table-responsive shadow-sm rounded-4 border">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark text-secondary">
+                        <tr>
+                            <th>Customer</th>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Order Date</th>
+                            <th>Queue Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td>@order.CustomerName</td>
+                                    <td>@order.ProductName</td>
+                                    <td>@order.Quantity</td>
+                                    <td>@order.OrderDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>
+                                        <span class="badge bg-@(
+                                              order.QueueStatus == "Completed" ? "success" :
+                                              order.QueueStatus == "Processing" ? "warning text-dark" :
+                                              "secondary"
+                                                                                )">
+                                    @order.QueueStatus
+                                </span>
+                            </td>
+                                    <td class="text-center">
+                                        <div class="d-inline-flex gap-2">
+                                            <!-- Edit and Delete buttons remain -->
+                                            <a href="@Url.Action("Edit", "Order", new { rowKey = order.RowKey })" class="btn btn-sm btn-primary">Edit</a>
+                                            <a href="@Url.Action("Delete", "Order", new { rowKey = order.RowKey })" class="btn btn-sm btn-danger">Delete</a>
+
+                                            <!-- Update Status form -->
+                                            <form asp-action="UpdateStatus" asp-controller="Order" method="post" class="d-inline">
+                                                <input type="hidden" name="rowKey" value="@order.RowKey" />
+                                                <select name="newStatus" class="form-select form-select-sm d-inline w-auto">
+                                                    <option value="Queued" selected="@((order.QueueStatus == "Queued") ? "selected" : "")">Queued</option>
+                                                    <option value="Processed" selected="@((order.QueueStatus == "Processed") ? "selected" : "")">Processed</option>
+                                                    <option value="Completed" selected="@((order.QueueStatus == "Completed") ? "selected" : "")">Completed</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-sm btn-success">Update</button>
+                                            </form>
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                                }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    No Orders Created.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

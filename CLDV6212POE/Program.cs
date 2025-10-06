@@ -11,6 +11,8 @@ builder.Services.AddControllersWithViews();
 // Azure Storage Services
 builder.Services.AddAzureStorageServices(azureConnStr);
 
+builder.Services.AddHttpClient<FunctionConnector>();
+
 var app = builder.Build();
 
 // HTTP Request Pipeline

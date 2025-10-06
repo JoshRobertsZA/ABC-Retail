@@ -1,0 +1,55 @@
+﻿@model OrderViewModel
+
+@{
+    ViewData["Title"] = "Create Order";
+}
+
+<div class="edit-container">
+    <div class="container py-5 mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <h4 class="mb-0">Create Order</h4>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Create" method="post" asp-controller="Order">
+                            @Html.AntiForgeryToken()
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label asp-for="CustomerId" class="form-label fw-bold">Customer</label>
+                                    <select asp-for="CustomerId" asp-items="Model.Customers" class="form-select" required>
+                                        <option value="">-- Select Customer --</option>
+                                    </select>
+                                    <span asp-validation-for="CustomerId" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <label asp-for="ProductId" class="form-label fw-bold">Product</label>
+                                    <select asp-for="ProductId" asp-items="Model.Products" class="form-select" required>
+                                        <option value="">-- Select Product --</option>
+                                    </select>
+                                    <span asp-validation-for="ProductId" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <label asp-for="Quantity" class="form-label fw-bold">Quantity</label>
+                                    <input asp-for="Quantity" type="number" min="1" class="form-control" required/>
+                                    <span asp-validation-for="Quantity" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="mt-4 d-flex justify-content-between">
+                                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-success">Place Order</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

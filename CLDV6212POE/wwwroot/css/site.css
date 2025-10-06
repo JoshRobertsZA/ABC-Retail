@@ -271,6 +271,12 @@ html, body {
     border-radius: 5px;
 }
 
+/* Order Styling */
+
+.order-container{
+    padding-top: 100px;
+}
+
 
 /* Document Styling*/
 .document .document-container {

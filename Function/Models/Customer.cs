@@ -2,9 +2,9 @@
 using Azure.Data.Tables;
 using System.ComponentModel.DataAnnotations;
 
-namespace CLDV6212POE.Models.Entities
+namespace Function.Models
 {
-    public class CustomerProfile : ITableEntity
+    public class Customer : ITableEntity
     {
         public string PartitionKey { get; set; } = "Customer";
 

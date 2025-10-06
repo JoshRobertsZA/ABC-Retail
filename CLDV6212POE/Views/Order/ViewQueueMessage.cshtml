@@ -1,0 +1,35 @@
+﻿@model List<CLDV6212POE.ViewModel.QueueMessageViewModel>
+@{
+    ViewData["Title"] = "Azure Queue Messages";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3 text-primary">Azure Queue Messages</h2>
+
+    @if (Model != null && Model.Any())
+    {
+        <table class="table table-striped table-hover shadow-sm">
+            <thead class="table-dark">
+            <tr>
+                <th>Message ID</th>
+                <th>Message Text</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var msg in Model)
+            {
+                <tr>
+                    <td>@msg.MessageId</td>
+                    <td>@msg.MessageText</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-info mt-3">@ViewBag.Status</div>
+    }
+
+    <a href="@Url.Action("Index", "Order")" class="btn btn-secondary mt-3">Back to Orders</a>
+</div>
