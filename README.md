@@ -1,4 +1,4 @@
-# Part 1 – POE
+# Part 2 – POE
 📺 [Video Demonstration](https://youtu.be/vCrWQM1shAI)
 
 🌐 [Link to website](https://st10265742-cldv6212.azurewebsites.net/)
