@@ -1,7 +1,7 @@
-# Part 1 – POE
-📺 [Video Demonstration](https://youtu.be/DOsxVqIbP6I)
+# Part 2 – POE
+📺 [Video Demonstration](https://youtu.be/vCrWQM1shAI)
 
-🌐 [Link to website](https://st10265742.azurewebsites.net/)
+🌐 [Link to website](https://st10265742-cldv6212.azurewebsites.net/)
 
 Follow these steps to open and run my POE on your computer:
 
