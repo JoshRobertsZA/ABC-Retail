@@ -1,7 +1,8 @@
-﻿using Azure.Data.Tables;
+﻿using Azure;
+using Azure.Data.Tables;
+using CLDV6212POE.Models;
 using CLDV6212POE.Services;
 using CLDV6212POE.ViewModel;
-using Function.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -15,6 +16,7 @@ namespace CLDV6212POE.Controllers
         private readonly TableStorageService<Customer> _customerService;
         private readonly TableStorageService<Product> _productService;
         private readonly TableStorageService<Order> _orderService;
+        private readonly CartService _cartService;
         private readonly FunctionConnector _functionConnector;
         private readonly ILogger<OrderController> _logger;
 
@@ -22,6 +24,7 @@ namespace CLDV6212POE.Controllers
             TableStorageService<Customer> customerService,
             TableStorageService<Product> productService,
             TableStorageService<Order> orderService,
+            CartService cartService,
             FunctionConnector functionConnector,
             ILogger<OrderController> logger)
         {
@@ -30,88 +33,118 @@ namespace CLDV6212POE.Controllers
             _orderService = orderService;
             _functionConnector = functionConnector;
             _logger = logger;
+            _cartService = cartService;
         }
 
         public async Task<IActionResult> Index()
         {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            var userId = HttpContext.Session.GetString("UserId");
+
             var orders = await _orderService.GetAllEntitiesAsync();
-            return View(orders ?? new List<Order>());
-        }
-
-
-        public async Task<IActionResult> Create()
-        {
-            var customers = await _customerService.GetAllEntitiesAsync();
             var products = await _productService.GetAllEntitiesAsync();
 
-            var model = new OrderViewModel
+            if (userRole != "Admin" && !string.IsNullOrEmpty(userId))
             {
-                Customers = customers
-                    .Select(c => new SelectListItem
-                    {
-                        Value = c.RowKey,
-                        Text = c.FullName
-                    }).ToList(),
+                // Only show logged-in user's orders
+                orders = orders.Where(o => o.CustomerId == userId).ToList();
+            }
 
-                Products = products
-                    .Select(p => new SelectListItem
-                    {
-                        Value = p.RowKey,
-                        Text = p.ProductName
-                    }).ToList()
-            };
+            // Map Order → OrderViewModel
+            var viewModel = orders.Select(o =>
+            {
+                var product = products.FirstOrDefault(p => p.RowKey == o.ProductId);
 
-            return View(model);
+                return new OrderViewModel
+                {
+                    CustomerName = o.CustomerName,
+                    CustomerId = o.CustomerId,
+                    ProductName = o.ProductName,
+                    ProductID = o.ProductId,
+                    Quantity = o.Quantity,
+                    OrderDate = o.OrderDate.DateTime,
+                    QueueStatus = o.QueueStatus,
+                    RowKey = o.RowKey,
+
+                    // ✅ Image & Price from Azure product data
+                    ImageUrl = product?.ImageUrl ?? "/images/no-image.png",
+                    Price = product?.Price
+                };
+            }).ToList();
+
+            return View(viewModel);
         }
 
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(OrderViewModel model)
+        public async Task<IActionResult> Create()
         {
             try
             {
-                // Validate customer & product
-                var customer = await _customerService.GetEntityAsync("Customer", model.CustomerId);
-                var product = await _productService.GetEntityAsync("Product", model.ProductId);
+                // Identify the current user (assuming user is authenticated)
+                var userId = HttpContext.Session.GetString("UserId");
+
+                var customer = await _customerService.GetCustomerByUserAsync(userId);
 
                 if (customer == null)
                 {
-                    ModelState.AddModelError(string.Empty, "Select a Customer");
-                    await ReloadDropdowns(model);
-                    return View(model);
+                    TempData["Error"] = "No customer record found for this user.";
+                    return RedirectToAction("Index", "Cart");
                 }
 
-                if (product == null)
+                // Get all items from this customer's cart
+                var cartItems = await _cartService.GetUserCartAsync(customer.RowKey);
+
+                if (cartItems == null || !cartItems.Any())
                 {
-                    ModelState.AddModelError(string.Empty, "Select a Product");
-                    await ReloadDropdowns(model);
-                    return View(model);
+                    TempData["Error"] = "Your cart is empty.";
+                    return RedirectToAction("Index", "Cart");
                 }
 
-                // Build order object (don't set RowKey here - let the function do it)
-                var order = new Order
+                // Loop through each cart item → create an order message
+                foreach (var item in cartItems)
+                {
+                    // Fetch product details for each cart item
+                    var product = await _productService.GetEntityAsync("Product", item.ProductId);
+
+                    if (product == null)
+                        continue; // skip if product not found
+
+                    var order = new Order
+                    {
+                        PartitionKey = "Order",
+                        RowKey = Guid.NewGuid().ToString(),
+                        CustomerId = userId,
+                        CustomerName = customer.FullName,
+                        ProductId = item.ProductId,
+                        ProductName = item.ProductName,
+                        Quantity = item.Quantity,
+                        OrderDate = DateTimeOffset.UtcNow,
+                        QueueStatus = "Pending"
+                    };
+
+                    // Send each order to your Azure Function queue
+                    await _functionConnector.SendMessageAsync(order);
+                }
+
+                // Clear the cart
+                await _cartService.ClearCartAsync(customer.RowKey);
+
+                _logger.LogInformation("All cart items queued as orders successfully.");
+                TempData["Success"] = "Your order has been placed successfully!";
+
+                return View("Confirmation", new Order
                 {
                     CustomerId = customer.RowKey,
                     CustomerName = customer.FullName,
-                    ProductId = product.RowKey,
-                    ProductName = product.ProductName,
-                    Quantity = model.Quantity,
                     OrderDate = DateTimeOffset.UtcNow
-                };
-
-                // Send order to queue - the Azure Function will save it to the table
-                await _functionConnector.SendMessageAsync(order);
-
-                _logger.LogInformation("Order queued successfully");
-                return RedirectToAction(nameof(Index));
+                });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error creating order");
-                ModelState.AddModelError(string.Empty, "An unexpected error occurred. Please try again.");
-                await ReloadDropdowns(model);
-                return View(model);
+                _logger.LogError(ex, "Error creating orders from cart");
+                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                return RedirectToAction("Index", "Cart");
             }
         }
 
@@ -119,21 +152,22 @@ namespace CLDV6212POE.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(string rowKey)
         {
-            //var order = await _orderService.GetEntityAsync("Order", rowKey);
-            //if (order == null) return NotFound();
+            string partitionKey = "Order"; // this matches your Order entity
 
-            //// Only send delete message to queue; function will delete from table
-            //var queueMessage = new QueueMessageViewModel
-            //{
-            //    TableName = "Order",
-            //    EntityId = rowKey,
-            //    Action = "Delete",
-            //    MessageText = $"Order deleted: {order.CustomerName} - {order.ProductName}"
-            //};
+            var order = await _orderService.GetEntityAsync(partitionKey, rowKey);
+            if (order == null) return NotFound();
 
-            //await _functionConnector.SendMessageAsync(queueMessage);
+            var queueMessage = new QueueMessageViewModel
+            {
+                TableName = "Order",
+                EntityId = rowKey,
+                Action = "Delete",
+                MessageText = $"Order deleted: {order.CustomerName} - {order.ProductName}"
+            };
 
-            //_logger.LogInformation("Queue message sent to delete order {OrderId}", rowKey);
+            await _functionConnector.SendMessageAsync(queueMessage);
+
+            _logger.LogInformation("Queue message sent to delete order {OrderId}", rowKey);
             return RedirectToAction(nameof(Index));
         }
 
@@ -147,9 +181,15 @@ namespace CLDV6212POE.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            var allowedStatuses = new[] { "Processing", "Completed" };
+            if (!allowedStatuses.Contains(newStatus))
+            {
+                TempData["Error"] = "Invalid status.";
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
-                // Use your TableStorageService or directly TableClient
                 var order = await _orderService.GetEntityAsync("Order", rowKey);
                 if (order == null)
                 {
@@ -158,7 +198,9 @@ namespace CLDV6212POE.Controllers
                 }
 
                 order.QueueStatus = newStatus;
-                await _orderService.UpdateEntityAsync(order);
+                order.ETag = ETag.All; // overwrite any ETag
+
+                await _orderService.UpdateEntityAsync(order, "Order", order.RowKey);
 
                 TempData["Success"] = $"Order status updated to {newStatus}.";
             }
@@ -168,15 +210,6 @@ namespace CLDV6212POE.Controllers
             }
 
             return RedirectToAction(nameof(Index));
-        }
-
-
-        private async Task ReloadDropdowns(OrderViewModel model)
-        {
-            var customers = await _customerService.GetAllEntitiesAsync();
-            var products = await _productService.GetAllEntitiesAsync();
-            model.Customers = customers.Select(c => new SelectListItem { Value = c.RowKey, Text = c.FullName }).ToList();
-            model.Products = products.Select(p => new SelectListItem { Value = p.RowKey, Text = p.ProductName }).ToList();
         }
     }
 }

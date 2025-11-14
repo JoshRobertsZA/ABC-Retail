@@ -1,0 +1,94 @@
+﻿@model IEnumerable<CLDV6212POE.Models.Cart>
+
+@{
+    ViewData["Title"] = "Shopping Cart";
+}
+
+@if (!Model.Any())
+{
+    <div class="confirmation-container">
+        <div class="confirm-order-container">
+            <img src="https://st10265742cldv6212.blob.core.windows.net/background/cart-empty.png" alt="Order Success" />
+            <h3 class="confirm-header">Your cart is empty</h3>
+            <p class="confirm-subheader"></p>
+
+            <div class="button-group">
+                <a asp-controller="Product" asp-action="Index" class="order-btn">Go to Products</a>
+                <a asp-controller="Order" asp-action="Index" class="shop-btn">View Orders</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-container">
+        <p class="footer-main">&copy; 2025 ABC Retail</p>
+        <p class="footer-sub">Built by <span>Josh Roberts</span></p>
+    </footer>
+}
+else
+{
+    <div class="cart-page">
+        <div class="cart-container">
+            <h3>Shopping Cart</h3>
+
+            <div class="cart-content">
+                <!-- Left -->
+                <div class="cart-items">
+                    <div class="card">
+                        <div class="card-body">
+                            @foreach (var item in Model)
+                            {
+                                <div class="cart-item d-flex justify-content-between align-items-center border-bottom py-3">
+                                    <div class="d-flex align-items-center">
+                                        <img src="@item.ImageUrl" alt="@item.ProductName" class="cart-img me-3"/>
+
+                                        <div class="item-info">
+                                            <h6>@item.ProductName</h6>
+                                            <p class="text-success mb-1">In stock</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="item-actions text-end">
+                                        <p class="price mb-1 fw-bold">R @item.ProductPrice</p>
+                                        <div class="quantity mb-2">
+                                        </div>
+                                        <button class="btn btn-sm btn-danger mt-1 remove-from-cart-btn"
+                                                data-product-id="@item.ProductId" title="Remove">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right -->
+                <div class="cart-summary">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Cart Summary</h5>
+                            <p class="summary-text">
+                                TOTAL: (@Model.Count() item@(Model.Count() > 1 ? "s" : ""))
+                            </p>
+                            <h3 class="summary-total">
+                                R @Model.Sum(x => x.ProductPrice * x.Quantity)
+                            </h3>
+                            <form action="/Order/Create" method="post">
+                                <button type="submit" class="checkout-btn btn btn-primary w-100">
+                                    Proceed to Checkout
+                                </button>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer-container">
+            <p class="footer-main">&copy; 2025 ABC Retail</p>
+            <p class="footer-sub">Built by <span>Josh Roberts</span></p>
+        </footer>
+    </div>
+}

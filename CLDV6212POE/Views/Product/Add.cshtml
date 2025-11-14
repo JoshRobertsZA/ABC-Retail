@@ -1,99 +1,78 @@
-﻿@model Function.Models.Product
+﻿@model CLDV6212POE.Models.Product
 
 @{
     ViewData["Title"] = "Add Product";
 }
 
-<div class="edit-container">
-    <div class="container py-5 mt-5">
-        <div class="row justify-content-center">
-            <form asp-action="Add" method="post" enctype="multipart/form-data" class="row g-3">
+<div class="ap-container">
+    <form asp-action="Add" method="post" enctype="multipart/form-data" class="ap-form">
+        <!-- Left Section -->
+        <div class="ap-left">
+            <div class="ap-image-card">
+                <img id="imagePreview"
+                     src="https://st10265742cldv6212.blob.core.windows.net/background/uploadimage.png"
+                     alt="Product Image"
+                     class="ap-preview" />
 
-                <!-- Left Container -->
-                <div class="col-md-4 mb-4">
-                    <div class="card text-center shadow-sm">
-                        <div class="card-body">
-
-                            <!-- Image Preview -->
-                            <img id="imagePreview"
-                                 src="https://cldv6212st10265742.blob.core.windows.net/productimages/defaultimg.png"
-                                 alt="Product Image"
-                                 class="img-fluid rounded-circle mb-3"
-                                 style="width: 150px; height: 150px; object-fit: cover;"/>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Upload Image</label>
-                                <input type="file" name="image" class="form-control" id="imageInput" accept="image/*"/>
-                            </div>
-
-                            <p class="text-muted small">Max image size 50MB</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Container -->
-                <div class="col-md-8">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-white border-bottom">
-                            <h4 class="mb-0">Add Product</h4>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label asp-for="ProductName" class="form-label"></label>
-                                    <input asp-for="ProductName" class="form-control"/>
-                                    <span asp-validation-for="ProductName" class="text-danger"></span>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label asp-for="Category" class="form-label"></label>
-                                    <input asp-for="Category" class="form-control"/>
-                                    <span asp-validation-for="Category" class="text-danger"></span>
-                                </div>
-
-                                <div class="col-md-12">
-                                    <label asp-for="Description" class="form-label"></label>
-                                    <textarea asp-for="Description" class="form-control"></textarea>
-                                    <span asp-validation-for="Description" class="text-danger"></span>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label asp-for="Price" class="form-label"></label>
-                                    <input asp-for="Price" class="form-control"/>
-                                    <span asp-validation-for="Price" class="text-danger"></span>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label asp-for="StockQuantity" class="form-label"></label>
-                                    <input asp-for="StockQuantity" class="form-control" type="number"/>
-                                    <span asp-validation-for="StockQuantity" class="text-danger"></span>
-                                </div>
-                            </div>
-
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-success">Add Product</button>
-                                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </form>
+                <label class="ap-upload-label" for="imageInput">Upload Image</label>
+                <input type="file" name="image" id="imageInput" accept="image/*" hidden />
+                <p class="ap-note">Max image size 50MB</p>
+            </div>
         </div>
-    </div>
+
+        <!-- Right Section -->
+        <div class="ap-right">
+            <h2 class="ap-title">Add Product</h2>
+            <div class="ap-grid">
+                <div class="ap-field">
+                    <label asp-for="ProductName" class="ap-label"></label>
+                    <input asp-for="ProductName" class="ap-input" />
+                    <span asp-validation-for="ProductName" class="ap-error"></span>
+                </div>
+
+                <div class="ap-field">
+                    <label asp-for="Category" class="ap-label"></label>
+                    <input asp-for="Category" class="ap-input" />
+                    <span asp-validation-for="Category" class="ap-error"></span>
+                </div>
+
+                <div class="ap-field ap-full">
+                    <label asp-for="Description" class="ap-label"></label>
+                    <textarea asp-for="Description" class="ap-textarea"></textarea>
+                    <span asp-validation-for="Description" class="ap-error"></span>
+                </div>
+
+                <div class="ap-field">
+                    <label asp-for="Price" class="ap-label"></label>
+                    <input asp-for="Price" class="ap-input" />
+                    <span asp-validation-for="Price" class="ap-error"></span>
+                </div>
+
+                <div class="ap-field">
+                    <label asp-for="StockQuantity" class="ap-label"></label>
+                    <input asp-for="StockQuantity" class="ap-input" type="number" />
+                    <span asp-validation-for="StockQuantity" class="ap-error"></span>
+                </div>
+
+            </div>
+
+            <div class="ap-buttons">
+                <button type="submit" class="ap-btn-primary">Add Product</button>
+                <a asp-action="Index" class="ap-btn-cancel">Cancel</a>
+            </div>
+        </div>
+    </form>
 </div>
 
+<!-- Footer -->
+<div class="footer-container">
+    <footer class="footer-text">
+        <p class="footer-main">&copy; 2025 ABC Retail</p>
+        <p class="footer-sub">Built by <span>Josh Roberts</span></p>
+    </footer>
+</div>
+
+
 @section Scripts {
-    <script>
-        document.getElementById('imageInput').addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('imagePreview').src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    </script>
+    <script src="~/js/product.js"></script>
 }

@@ -1,0 +1,40 @@
+﻿<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content login-modal-content">
+            <div class="modal-body p-0 d-flex">
+
+                <div class="login-form-container">
+                    <div class="login-header">
+                        <h3>Login</h3>
+                        <p>Welcome back to ABC Retail</p>
+                    </div>
+
+                    <form id="loginForm">
+                        
+                        <input type="hidden" id="returnUrl" name="returnUrl" value="@Context.Request.Path" />
+
+                        <label class="login-input-label" for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" name="email" class="login-input" placeholder="Enter your email" required>
+
+                        <label class="login-input-label" for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" name="password" class="login-input" placeholder="Enter your password" required>
+
+                        <span id="loginError" class="text-danger mt-2" style="display:none;"></span>
+
+                        <button type="submit" class="login-btn-primary mt-3">Sign in</button>
+
+                        <div class="login-footer-text mt-3">
+                            Don’t have an account?
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">Register</a>
+                        </div>
+                    </form>
+
+                </div>
+
+                <div class="login-image-container">
+                    <img src="https://st10265742cldv6212.blob.core.windows.net/background/vc.png" alt="Login background">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

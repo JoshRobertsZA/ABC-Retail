@@ -1,87 +1,176 @@
-﻿@model List<Function.Models.Order>
+﻿@model List<CLDV6212POE.ViewModel.OrderViewModel>
 
 @{
     ViewData["Title"] = "Orders";
+    var userRole = Context.Session.GetString("UserRole");
+    var userId = Context.Session.GetString("UserId");
 }
 
-<div class="order">
-    <div class="order-container">
-        <div class="container py-5">
-            <a href="@Url.Action("Create", "Order")" class="btn btn-success mb-4">Create Order</a>
+@if (userRole == "Admin")
+{
+    <!-- Admin view (all orders) -->
+    <div class="order">
+        <div class="order-container">
+            <div class="container py-5">
 
-            @if (TempData["Message"] != null)
-            {
-                <div class="alert alert-success">@TempData["Message"]</div>
-            }
-            else if (TempData["Error"] != null)
-            {
-                <div class="alert alert-danger">@TempData["Error"]</div>
-            }
+                <h2 class="order-amount-title">All Orders (@Model.Count)</h2>
 
-            <div class="table-responsive shadow-sm rounded-4 border">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark text-secondary">
-                        <tr>
-                            <th>Customer</th>
-                            <th>Product</th>
-                            <th>Quantity</th>
-                            <th>Order Date</th>
-                            <th>Queue Status</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
+                <table class="table-container table table-hover align-middle">
+                    <thead style="background-color:#70aa93; color:white;">
+                    <tr>
+                        <th>Customer</th>
+                        <th>Customer ID</th>
+                        <th>Product</th>
+                        <th>Order Date</th>
+                        <th>Order Status</th>
+
+                    </tr>
                     </thead>
                     <tbody>
-                        @if (Model != null && Model.Any())
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var order in Model)
                         {
-                            foreach (var order in Model)
-                            {
-                                <tr>
-                                    <td>@order.CustomerName</td>
-                                    <td>@order.ProductName</td>
-                                    <td>@order.Quantity</td>
-                                    <td>@order.OrderDate.ToString("yyyy-MM-dd HH:mm")</td>
-                                    <td>
-                                        <span class="badge bg-@(
-                                              order.QueueStatus == "Completed" ? "success" :
-                                              order.QueueStatus == "Processing" ? "warning text-dark" :
-                                              "secondary"
-                                                                                )">
-                                    @order.QueueStatus
-                                </span>
-                            </td>
-                                    <td class="text-center">
-                                        <div class="d-inline-flex gap-2">
-                                            <!-- Edit and Delete buttons remain -->
-                                            <a href="@Url.Action("Edit", "Order", new { rowKey = order.RowKey })" class="btn btn-sm btn-primary">Edit</a>
-                                            <a href="@Url.Action("Delete", "Order", new { rowKey = order.RowKey })" class="btn btn-sm btn-danger">Delete</a>
-
-                                            <!-- Update Status form -->
-                                            <form asp-action="UpdateStatus" asp-controller="Order" method="post" class="d-inline">
-                                                <input type="hidden" name="rowKey" value="@order.RowKey" />
-                                                <select name="newStatus" class="form-select form-select-sm d-inline w-auto">
-                                                    <option value="Queued" selected="@((order.QueueStatus == "Queued") ? "selected" : "")">Queued</option>
-                                                    <option value="Processed" selected="@((order.QueueStatus == "Processed") ? "selected" : "")">Processed</option>
-                                                    <option value="Completed" selected="@((order.QueueStatus == "Completed") ? "selected" : "")">Completed</option>
-                                                </select>
-                                                <button type="submit" class="btn btn-sm btn-success">Update</button>
-                                            </form>
-                                        </div>
-                                    </td>
-
-                                </tr>
-                                                }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
-                                    No Orders Created.
+                            <tr data-bs-toggle="modal" data-bs-target="#orderModal-@order.RowKey" style="cursor:pointer;">
+                                <td>@order.CustomerName</td>
+                                <td>@order.CustomerId</td>
+                                <td>@order.ProductName</td>
+                                <td>@order.OrderDate</td>
+                                <td>
+                                    @{
+                                        string statusClass = order.QueueStatus switch
+                                        {
+                                                "Completed" => "completed",
+                                                "Processing" => "processed",
+                                                _ => "pending"
+                                        };
+                                    }
+                                        <span class="status-badge @statusClass">@order.QueueStatus</span>
                                 </td>
                             </tr>
+
+                            <!-- Render modal from partial -->
+                            @await Html.PartialAsync("_OrderDetailsModal", order)
                         }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                No Orders Created.
+                            </td>
+                        </tr>
+                    }
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-</div>
+
+    <footer class="footer-container">
+
+        <p class="footer-main">&copy; 2025 ABC Retail</p>
+        <p class="footer-sub">Built by <span>Josh Roberts</span></p>
+    </footer>
+}
+else if (!string.IsNullOrEmpty(userId))
+{
+    <!-- Customer view: only show their own orders -->
+    <div class="order-container">
+        @if (Model.Any(o => o.CustomerId == userId))
+        {
+            <div class="order-container">
+                <div class="container py-5">
+                    <h2 class="order-amount-title">Order Details (@Model.Count)</h2>
+
+                    <table class="table-container table table-hover align-middle">
+                        <thead style="background-color:#70aa93; color:white;">
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Product ID</th>
+                            <th>Order Date</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr data-bs-toggle="modal" data-bs-target="#orderModal-@item.RowKey" style="cursor:pointer;">
+
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div>
+                                            <strong>@item.ProductName</strong><br/>
+                                            <small class="text-muted">Qty: @item.Quantity</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@item.ProductID</td>
+                                <td>@item.OrderDate</td>
+                                <td>
+                                        @{
+                                            string statusClass = item.QueueStatus switch
+                                            {
+                                                "Completed" => "completed",
+                                                "Processing" => "processed",
+                                                _ => "pending"
+                                            };
+                                        }
+                                        <span class="status-badge @statusClass">@item.QueueStatus</span>
+                                </td>
+                            </tr>
+
+                            @await Html.PartialAsync("_OrderDetailsModal", item)
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="footer-container">
+                <p class="footer-main">&copy; 2025 ABC Retail</p>
+                <p class="footer-sub">Built by <span>Josh Roberts</span></p>
+            </footer>
+        }
+        else
+        {
+            @* No Orders have been placed from Customer *@
+            <div class="confirmation-container">
+                <div class="confirm-order-container">
+                    <img src="https://st10265742cldv6212.blob.core.windows.net/background/orderlogo.png" alt="Order Success"/>
+                    <h3 class="confirm-header">No Orders Placed</h3>
+                    <p class="confirm-subheader">You have no orders placed</p>
+
+                    <div class="button-group">
+                        <a asp-controller="Product" asp-action="Index" class="order-btn">Start Shopping</a>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="footer-container">
+                <p class="footer-main">&copy; 2025 ABC Retail</p>
+                <p class="footer-sub">Built by <span>Josh Roberts</span></p>
+            </footer>
+        }
+    </div>
+}
+else
+{
+    @* Not logged in *@
+    <div class="confirmation-container">
+        <div class="confirm-order-container">
+            <img src="https://st10265742cldv6212.blob.core.windows.net/background/orderlogo.png" alt="Order Success"/>
+            <h3 class="confirm-header">Login to view Orders</h3>
+            <p class="confirm-subheader">You must be logged in to view order</p>
+
+            <div class="button-group">
+                <a asp-controller="Home" asp-action="Index" class="order-btn">Go Home</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-container">
+        <p class="footer-main">&copy; 2025 ABC Retail</p>
+        <p class="footer-sub">Built by <span>Josh Roberts</span></p>
+    </footer>
+}

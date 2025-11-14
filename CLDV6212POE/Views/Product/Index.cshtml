@@ -1,57 +1,118 @@
-﻿@model List<Function.Models.Product>
+﻿@model List<CLDV6212POE.Models.Product>
 
 @{
     ViewData["Title"] = "Product Information";
+    var userRole = Context.Session.GetString("UserRole");
 }
 
 <div class="product">
     <div class="product-container">
-        <div class="container mt-5">
-            <a href="@Url.Action("Add", "Product")" class="btn btn-success mb-4">Add New Product</a>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-            <div class="product-grid">
-                @foreach (var product in Model)
-                {
-                    <div class="product-card">
-                        <img src="@(!string.IsNullOrEmpty(product.ImageUrl) ? product.ImageUrl : "https://cldv6212st10265742.blob.core.windows.net/productimages/defaultimg.png")"
-                             class="product-image img-fluid"
-                             alt="@product.ProductName"/>
 
-
-                        <h5>@product.ProductName</h5>
-
-                        <p class="text-muted">@product.Description</p>
-
-                        <div class="product-price">@product.Price</div>
-
-                        <div class="product-meta-row d-flex flex-column align-items-center mt-3 mb-2 small">
-                            <div class="d-flex gap-4 justify-content-center">
-                                <div class="meta-item d-flex flex-column align-items-center text-center">
-                                    <i class="bi bi-tag"></i>
-                                    <span>@product.Category</span>
-                                </div>
-                                <div class="meta-item d-flex flex-column align-items-center text-center">
-                                    <i class="bi bi-box"></i>
-                                    <span>@product.StockQuantity in stock</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-center gap-2 mt-3">
-                            <a href="@Url.Action("Edit", "Product", new { partitionKey = product.PartitionKey, rowKey = product.RowKey })"
-                               class="btn btn-sm btn-primary">
-                                Edit
-                            </a>
-                            <a href="@Url.Action("Delete", "Product", new { partitionKey = product.PartitionKey, rowKey = product.RowKey })"
-                               class="btn btn-sm btn-danger"
-                               onclick="return confirm('Are you sure you want to delete this customer?');">
-                                Delete
-                            </a>
-                        </div>
-                    </div>
-                }
+        <!-- Search Bar -->
+        <div class="search-section">
+            <div class="container">
+                <div class="search-box">
+                    <input id="searchInput" type="text" 
+                           placeholder="Search for products, brands..." 
+                           value="@ViewData["SearchQuery"]" />
+                    <button><i class="fa fa-search"></i></button>
+                </div>
             </div>
-            <div style="height: 100px;"></div>
         </div>
+
+        <!-- Filter -->
+        <div class="filter-section">
+            <div class="filter-container">
+                <p class="filter-text"></p>
+
+                <div class="filter-right">
+                    <div class="filter-sort-group">
+                        <span class="filter-sort-text">Sort By:</span>
+                        <select id="sortSelect" class="filter-select">
+                            <option value="all">All</option>
+                            <option value="hightolow">Price: High to Low</option>
+                            <option value="lowtohigh">Price: Low to High</option>
+                        </select>
+
+                    </div>
+
+                    @if (userRole == "Admin")
+                    {
+                        <a asp-controller="Product" asp-action="Add" class="add-product-btn">
+                            + Add Product
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div id="productContainer">
+            @Html.Partial("_ProductListPartial", Model)
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-container">
+            <footer class="footer-text">
+                <p class="footer-main">&copy; 2025 ABC Retail</p>
+                <p class="footer-sub">Built by <span>Josh Roberts</span></p>
+            </footer>
+        </div>
+
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const container = document.getElementById("productContainer");
+
+    function openProductModal(rowKey) {
+        fetch(`/Product/Details?rowKey=${rowKey}`)
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById("productDetailContainer").innerHTML = html;
+                const modal = new bootstrap.Modal(document.getElementById("productDetailModal"));
+                modal.show();
+            });
+    }
+
+    // Event delegation for product clicks
+    container.addEventListener("click", function (e) {
+        const cardBody = e.target.closest(".product-page-card-body");
+        if (!cardBody) return;
+
+        const rowKey = cardBody.getAttribute("data-rowkey");
+        if (!rowKey) return;
+
+        openProductModal(rowKey);
+    });
+
+    const sortSelect = document.getElementById("sortSelect");
+    const searchInput = document.getElementById("searchInput");
+
+    function updateProducts(url) {
+        fetch(url)
+            .then(res => res.text())
+            .then(html => {
+                container.innerHTML = html;
+            });
+    }
+
+    // Sort
+    sortSelect.addEventListener("change", function () {
+        const sortType = this.value;
+        const query = searchInput.value;
+        updateProducts(`/Product/Sort?sortType=${sortType}&q=${encodeURIComponent(query)}`);
+    });
+
+    // Search
+    searchInput.addEventListener("keyup", function () {
+        const query = this.value;
+        updateProducts(`/Product/Search?q=${encodeURIComponent(query)}`);
+    });
+});
+
+</script>
+
+@section Scripts {
+    <script src="~/js/product.js"></script>
+}

@@ -1,79 +1,37 @@
-﻿using System.Reflection;
-using Azure;
+﻿using Azure;
 using Azure.Data.Tables;
+using CLDV6212POE.Models;
+using System.Reflection;
+
 
 namespace CLDV6212POE.Services;
 
-public class TableStorageService<T> where T : class, ITableEntity, new()
+public class TableStorageService<T> where T : class, new()
 {
-    private static readonly string[] ReservedITableEntityProps =
-    [
-        nameof(ITableEntity.PartitionKey),
-        nameof(ITableEntity.RowKey),
-        nameof(ITableEntity.Timestamp),
-        nameof(ITableEntity.ETag)
-    ];
-
     private readonly TableClient _tableClient;
 
-    public TableStorageService(string connectionString, string tableName)
+    public TableStorageService(string? connectionString, string tableName)
     {
         _tableClient = new TableClient(connectionString, tableName);
         _tableClient.CreateIfNotExists();
     }
 
-    /// <summary>
-    /// Returns all entities in the table.
-    /// </summary>
     public async Task<List<T>> GetAllEntitiesAsync()
     {
-        try
+        var list = new List<T>();
+        await foreach (var entity in _tableClient.QueryAsync<TableEntity>())
         {
-            var entities = new List<T>();
-            await foreach (var entity in _tableClient.QueryAsync<T>())
-            {
-                entities.Add(entity);
-            }
-            return entities;
+            list.Add(MapFromTableEntity(entity));
         }
-        catch (Exception ex) when (ex is InvalidCastException || ex is FormatException)
-        {
-            return await GetAllEntitiesWithSafeConversionAsync();
-        }
+        return list;
     }
 
-
-    /// <summary>
-    /// Retrieves an entity by partition key and row key.
-    /// </summary>
     public async Task<T?> GetEntityAsync(string partitionKey, string rowKey)
     {
         try
         {
-            var response = await _tableClient.GetEntityAsync<T>(partitionKey, rowKey);
-            return response.Value;
-        }
-        catch (RequestFailedException ex) when (ex.Status == 404)
-        {
-            return default;
-        }
-        catch (Exception ex) when (ex is InvalidCastException || ex is FormatException)
-        {
-            var te = await GetTableEntityAsync(partitionKey, rowKey);
-            return te == null ? default : ConvertTableEntityToT(te);
-        }
-    }
-
-
-    /// <summary>
-    /// Retrieves an entity by partition key and row key as TableEntity.
-    /// </summary>
-    public async Task<TableEntity?> GetTableEntityAsync(string partitionKey, string rowKey)
-    {
-        try
-        {
             var response = await _tableClient.GetEntityAsync<TableEntity>(partitionKey, rowKey);
-            return response.Value;
+            return MapFromTableEntity(response.Value);
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
@@ -81,70 +39,66 @@ public class TableStorageService<T> where T : class, ITableEntity, new()
         }
     }
 
-
-    /// <summary>
-    /// Updates an existing entity in the table.
-    /// </summary>
-    public async Task UpdateEntityAsync(T entity)
+    public async Task<bool> StoreEntityAsync(T entity, string? partitionKey = null, string? rowKey = null)
     {
-        await _tableClient.UpdateEntityAsync(entity, entity.ETag, TableUpdateMode.Replace);
+        try
+        {
+            var tableEntity = MapToTableEntity(entity, partitionKey, rowKey);
+            await _tableClient.AddEntityAsync(tableEntity);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
+    public async Task UpdateEntityAsync(T entity, string partitionKey, string rowKey)
+    {
+        var tableEntity = MapToTableEntity(entity, partitionKey, rowKey);
+        await _tableClient.UpdateEntityAsync(tableEntity, ETag.All, TableUpdateMode.Replace);
+    }
 
-    /// <summary>
-    /// Deletes an entity from the table.
-    /// </summary>
     public async Task DeleteEntityAsync(string partitionKey, string rowKey)
     {
         await _tableClient.DeleteEntityAsync(partitionKey, rowKey);
     }
 
-
-    /// <summary>
-    /// Fallback: query as TableEntity and convert to T with safe conversions.
-    /// </summary>
-    private async Task<List<T>> GetAllEntitiesWithSafeConversionAsync()
+    private T MapFromTableEntity(TableEntity te)
     {
-        var list = new List<T>();
-        await foreach (var te in _tableClient.QueryAsync<TableEntity>())
+        var result = new T();
+        foreach (var prop in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanWrite))
         {
-            list.Add(ConvertTableEntityToT(te));
-        }
-        return list;
-    }
-
-
-    private static T ConvertTableEntityToT(TableEntity te)
-    {
-        var result = new T
-        {
-            PartitionKey = te.PartitionKey,
-            RowKey = te.RowKey,
-            Timestamp = te.Timestamp,
-            ETag = te.ETag
-        };
-
-        var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p => p.CanWrite && !ReservedITableEntityProps.Contains(p.Name));
-
-        foreach (var prop in props)
-        {
-            if (!te.TryGetValue(prop.Name, out var value) || value is null)
-                continue;
-
-            if (TryConvert(value, prop.PropertyType, out var converted))
+            if (te.TryGetValue(prop.Name, out var value) && value != null)
             {
-                try
+                if (TryConvert(value, prop.PropertyType, out var converted))
                 {
                     prop.SetValue(result, converted);
                 }
-                catch {}
             }
         }
-
         return result;
     }
 
+    private TableEntity MapToTableEntity(T entity, string partitionKey, string rowKey)
+    {
+        var tableEntity = new TableEntity(partitionKey, rowKey);
+
+        foreach (var property in typeof(T).GetProperties())
+        {
+            if (property.Name == nameof(TableEntity.PartitionKey) ||
+                property.Name == nameof(TableEntity.RowKey) ||
+                property.Name == nameof(TableEntity.Timestamp) ||
+                property.Name == nameof(TableEntity.ETag))
+                continue; // ✅ Skip system fields
+
+            var value = property.GetValue(entity);
+            if (value != null)
+                tableEntity[property.Name] = value;
+        }
+
+        return tableEntity;
+    }
 
     private static bool TryConvert(object value, Type targetType, out object? converted)
     {
@@ -153,72 +107,42 @@ public class TableStorageService<T> where T : class, ITableEntity, new()
 
         try
         {
-            if (underlying == typeof(string))
+            if (underlying.IsAssignableFrom(value.GetType()))
             {
-                converted = value.ToString();
+                converted = value;
                 return true;
-            }
-            if (underlying == typeof(int))
-            {
-                if (value is int i) { converted = i; return true; }
-                if (value is long l) { converted = checked((int)l); return true; }
-                if (value is string s && int.TryParse(s, out var pi)) { converted = pi; return true; }
-            }
-            if (underlying == typeof(long))
-            {
-                if (value is long l2) { converted = l2; return true; }
-                if (value is int i2) { converted = (long)i2; return true; }
-                if (value is string s2 && long.TryParse(s2, out var pl)) { converted = pl; return true; }
-            }
-            if (underlying == typeof(double))
-            {
-                if (value is double d) { converted = d; return true; }
-                if (value is float f) { converted = (double)f; return true; }
-                if (value is string s3 && double.TryParse(s3, out var pd)) { converted = pd; return true; }
-            }
-            if (underlying == typeof(decimal))
-            {
-                if (value is decimal de) { converted = de; return true; }
-                if (value is double dd) { converted = (decimal)dd; return true; }
-                if (value is string s4 && decimal.TryParse(s4, out var pde)) { converted = pde; return true; }
-            }
-            if (underlying == typeof(bool))
-            {
-                if (value is bool b) { converted = b; return true; }
-                if (value is string s5 && bool.TryParse(s5, out var pb)) { converted = pb; return true; }
-                if (value is int ib) { converted = ib != 0; return true; }
-            }
-            if (underlying == typeof(DateTimeOffset))
-            {
-                if (value is DateTimeOffset dto) { converted = dto; return true; }
-                if (value is DateTime dt) { converted = new DateTimeOffset(dt); return true; }
-                if (value is string s6 && DateTimeOffset.TryParse(s6, out var pdt)) { converted = pdt; return true; }
-            }
-            if (underlying == typeof(DateTime))
-            {
-                if (value is DateTime dt2) { converted = dt2; return true; }
-                if (value is DateTimeOffset dto2) { converted = dto2.UtcDateTime; return true; }
-                if (value is string s7 && DateTime.TryParse(s7, out var pdt2)) { converted = pdt2; return true; }
-            }
-            if (underlying == typeof(Guid))
-            {
-                if (value is Guid g) { converted = g; return true; }
-                if (value is string s8 && Guid.TryParse(s8, out var pg)) { converted = pg; return true; }
             }
 
-            // Fallback using Convert.ChangeType for IConvertible types
-            if (value is IConvertible)
-            {
-                converted = Convert.ChangeType(value, underlying);
-                return true;
-            }
+            converted = Convert.ChangeType(value, underlying);
+            return true;
         }
         catch
         {
-            // ignore and fall through
+            converted = null;
+            return false;
+        }
+    }
+
+    public async Task<Customer?> GetCustomerByUserAsync(string userId)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new ArgumentException("Invalid userId passed to GetCustomerByUserAsync.");
+
+        var safeKey = userId.Replace("/", "_").Replace("\\", "_").Replace("#", "_")
+            .Replace("?", "_").Replace("[", "_").Replace("]", "_");
+
+        var query = $"PartitionKey eq '{safeKey}'";
+
+        await foreach (var entity in _tableClient.QueryAsync<Customer>(query))
+        {
+            return entity;
         }
 
-        converted = null;
-        return false;
+        return null;
+    }
+
+    public TableClient GetTableClient()
+    {
+        return _tableClient;
     }
 }

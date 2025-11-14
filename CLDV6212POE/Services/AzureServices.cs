@@ -1,4 +1,4 @@
-﻿using Function.Models;
+﻿using CLDV6212POE.Models;
 
 namespace CLDV6212POE.Services;
 
@@ -15,6 +15,10 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<TableStorageService<Order>>(_ =>
             new TableStorageService<Order>(connectionString, "Order"));
+
+        services.AddScoped<TableStorageService<Cart>>(_ =>
+            new TableStorageService<Cart>(connectionString, "Cart"));
+
 
         // File Sharing
         services.AddSingleton<FileStorageService>();

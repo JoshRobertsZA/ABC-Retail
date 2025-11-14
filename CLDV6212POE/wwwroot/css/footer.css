@@ -1,0 +1,32 @@
+﻿.footer-container {
+    background: #fff;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.footer-text {
+    text-align: center;
+    color: #000;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.footer-main {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+
+.footer-sub {
+    font-size: 0.75rem;
+    color: #aaa;
+    font-style: italic;
+}
+
+    .footer-sub span {
+        color: #4dabf7;
+        font-weight: 500;
+    }

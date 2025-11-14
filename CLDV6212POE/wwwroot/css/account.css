@@ -1,0 +1,220 @@
+﻿/* =============================== */
+/* LOGIN MODAL CUSTOM STYLES       */
+/* =============================== */
+
+/* Modal Container */
+.login-modal-content {
+    border: none;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Modal Body Layout */
+.login-form-container {
+    flex: 1;
+    background-color: #ffffff;
+    padding: 40px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.login-image-container {
+    flex: 1;
+    background-color: #f7f7f7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+    .login-image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+/* =============================== */
+/* HEADER TEXT                     */
+/* =============================== */
+.login-header h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.login-header p {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 25px;
+}
+
+/* =============================== */
+/* FORM ELEMENTS                   */
+/* =============================== */
+.login-input-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 6px;
+}
+
+.login-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+    .login-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+        outline: none;
+    }
+
+/* =============================== */
+/* CHECKBOX & FORGOT PASSWORD      */
+/* =============================== */
+.login-checkbox-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+    .login-checkbox-container label {
+        font-size: 12px;
+        color: #555;
+    }
+
+.login-checkbox {
+    margin-right: 6px;
+}
+
+.login-forgot {
+    font-size: 12px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+    .login-forgot:hover {
+        text-decoration: underline;
+    }
+
+/* =============================== */
+/* BUTTONS                         */
+/* =============================== */
+.login-btn-primary {
+    width: 100%;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 0;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    margin-bottom: 10px;
+}
+
+    .login-btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+.login-btn-google {
+    width: 100%;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 9px 0;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+    .login-btn-google img {
+        width: 18px;
+        height: 18px;
+    }
+
+    .login-btn-google:hover {
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+/* =============================== */
+/* FOOTER TEXT                     */
+/* =============================== */
+.login-footer-text {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: #666;
+}
+
+    .login-footer-text a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+        .login-footer-text a:hover {
+            text-decoration: underline;
+        }
+
+/* =============================== */
+/* RESPONSIVE DESIGN               */
+/* =============================== */
+@media (max-width: 768px) {
+    .modal-dialog {
+        max-width: 90%;
+    }
+
+    .login-modal-content {
+        flex-direction: column;
+    }
+
+    .login-image-container {
+        display: none;
+    }
+
+    .login-form-container {
+        padding: 30px;
+    }
+}
+
+/* =============================== */
+/* REGISTER MODAL EXTRA TWEAKS     */
+/* =============================== */
+
+#registerModal .login-header h3 {
+    color: #333;
+}
+
+#registerModal .login-header p {
+    color: #777;
+}
+
+#registerModal .login-btn-primary {
+    background-color: #28a745;
+}
+
+    #registerModal .login-btn-primary:hover {
+        background-color: #218838;
+    }
+
+#registerModal .login-btn-google img {
+    width: 18px;
+    height: 18px;
+}
+

@@ -1,0 +1,131 @@
+﻿.document .document-container {
+    background-color: white;
+    padding: 150px 20px 50px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 76vh
+}
+
+.document .content-wrapper {
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 4px;
+    width: 100%;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    color: #000;
+    box-sizing: border-box;
+    max-width: 1400px;
+}
+
+.document-header-text{
+    font-size: 30px;
+}
+
+.document-subheader-text {
+    font-size: 24px;
+}
+
+.document .upload-message {
+    margin-bottom: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+    .document .upload-message.success {
+        color: green;
+    }
+
+    .document .upload-message.error {
+        color: red;
+    }
+
+.document .content-wrapper ul li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #CED5DF;
+    min-width: 1315px;
+    position: relative;
+    left: -30px;
+}
+
+    .document .content-wrapper ul li .file-actions {
+        display: flex;
+        gap: 15px;
+    }
+
+        .document .content-wrapper ul li .file-actions a {
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+            .document .content-wrapper ul li .file-actions a.delete-link {
+                background-color: #dc3545;
+                color: white;
+            }
+
+                .document .content-wrapper ul li .file-actions a.delete-link:hover {
+                    background-color: #a71d2a;
+                }
+
+            .document .content-wrapper ul li .file-actions a.download-link {
+                background-color: #28a745;
+                color: white;
+            }
+
+                .document .content-wrapper ul li .file-actions a.download-link:hover {
+                    background-color: #1e7e34;
+                }
+
+.document .upload-form {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+    .document .upload-form .file-input {
+        flex-grow: 1;
+        padding: 8px 12px;
+        border: 1px solid #CED5DF;
+        border-radius: 6px;
+        color: #000;
+        font-size: 14px;
+    }
+
+        .document .upload-form .file-input::file-selector-button {
+            background-color: #444;
+            border: none;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+            .document .upload-form .file-input::file-selector-button:hover {
+                background-color: #222;
+            }
+
+    .document .upload-form .btn-upload {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+        .document .upload-form .btn-upload:hover {
+            background-color: #0056b3;
+        }

@@ -1,9 +1,8 @@
 ﻿using Azure.Storage.Queues;
-using CLDV6212POE.ViewModel;
-using Function.Models;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using CLDV6212POE.Models;
 using static System.Net.WebRequestMethods;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using QueueMessageViewModel = Function.Models.QueueMessageViewModel;
@@ -121,7 +120,7 @@ namespace CLDV6212POE.Services
         #region Azure Queue
 
         // Sends a message to the Azure queue
-        public async Task SendMessageAsync(Order order)
+        public async Task SendMessageAsync<T>(T message)
         {
             var queueClient = new QueueClient(
                 _connectionString,
@@ -131,14 +130,12 @@ namespace CLDV6212POE.Services
 
             await queueClient.CreateIfNotExistsAsync();
 
-            // Serialize order to JSON
-            string json = JsonSerializer.Serialize(order);
+            // Serialize message to JSON
+            string json = JsonSerializer.Serialize(message);
 
             await queueClient.SendMessageAsync(json);
 
-            // Log the JSON being sent
-            _logger.LogInformation("Sending order to queue: {Json}", json);
-
+            _logger.LogInformation("Sending message to queue: {Json}", json);
         }
 
 

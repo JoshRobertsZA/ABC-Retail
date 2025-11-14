@@ -1,7 +1,9 @@
-﻿using CLDV6212POE.Services;
+﻿using CLDV6212POE.Data;
+using CLDV6212POE.Models;
+using CLDV6212POE.Services;
+using CLDV6212POE.ViewModel;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection;
-using Function.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CLDV6212POE.Controllers
 {
@@ -9,108 +11,102 @@ namespace CLDV6212POE.Controllers
     {
         private readonly TableStorageService<Customer> _customerService;
         private readonly FunctionConnector _functionConnector;
+        private readonly AppDbContext _context;
 
 
         // Injected service for Azure Table Storage operations
         public CustomerController(TableStorageService<Customer> customerService,
-            FunctionConnector functionConnector)
+            FunctionConnector functionConnector, AppDbContext context)
         {
             _customerService = customerService;
             _functionConnector = functionConnector;
+            _context = context;
         }
 
 
         // Displays a list of all customers
-        public async Task<IActionResult> IndexAsync(string searchTerm)
+        public async Task<IActionResult> Index()
         {
-            var customers = await _customerService.GetAllEntitiesAsync();
-            if (!string.IsNullOrEmpty(searchTerm))
+            var role = HttpContext.Session.GetString("UserRole");
+
+            if (role != "Admin")
+                return Unauthorized();
+
+            var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Customer");
+            if (customerRole == null) return NotFound("Customer role not found");
+
+            var userList = await _context.UserRoles
+                .Where(ur => ur.RoleId == customerRole.RoleId)
+                .Include(ur => ur.User)
+                .Select(ur => ur.User)
+                .ToListAsync();
+
+            var customers = new List<CustomerViewModel>();
+
+            foreach (var user in userList)
             {
-                customers = customers
-                    .Where(c => (c.FullName != null && c.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                                (c.Email != null && c.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
-                    .ToList();
+                // Fetch Azure Table Customer entity
+                var customerEntity = await _customerService.GetEntityAsync("Customer", user.UserId.ToString());
+
+                customers.Add(new CustomerViewModel
+                {
+                    UserId = user.UserId,
+                    Fullname = user.Fullname,
+                    Email = user.Email,
+                    PartitionKey = "Customer",
+                    RowKey = user.UserId.ToString(),
+                    CreatedDate = customerEntity?.CreatedDate ?? DateTimeOffset.MinValue
+                });
             }
 
             return View(customers);
         }
 
+
         public async Task<IActionResult> ViewCustomerQueue()
         {
+            var role = HttpContext.Session.GetString("UserRole");
+
+            if (role != "Admin")
+                return Unauthorized();
+
             var messages = await _functionConnector.ReceiveMessagesAsync();
             return View(messages);
         }
 
-        // Shows the form to add a new customer
+
         [HttpGet]
-        public IActionResult Add()
+        public async Task<IActionResult> Delete(string customerPartitionKey)
         {
-            return View(new Customer());
-        }
+            var role = HttpContext.Session.GetString("UserRole");
 
+            if (role != "Admin")
+                return Unauthorized();
 
-        // Shows the form to add a new customer
-        [HttpPost]
-        public async Task<IActionResult> Add(Customer customer)
-        {
-            customer.DateOfBirth = DateTime.SpecifyKind(customer.DateOfBirth.DateTime, DateTimeKind.Utc);
+            if (string.IsNullOrEmpty(customerPartitionKey))
+                return BadRequest("CustomerPartitionKey is required");
 
-            await _functionConnector.SendCustomerMessageAsync(customer);
-
-            var success = await _functionConnector.StoreCustomerAsync(customer);
-            if (!success)
+            // Get customer from Azure Table Storage using PartitionKey
+            var customer = await _customerService.GetCustomerByUserAsync(customerPartitionKey);
+            if (customer != null)
             {
-                ModelState.AddModelError(string.Empty, "Failed to store order via Azure Function.");
-                return View(customer);
+                await _customerService.DeleteEntityAsync(customer.PartitionKey, customer.RowKey);
             }
 
+            // Delete User from SQL Database
+            if (Guid.TryParse(customerPartitionKey, out Guid userId))
+            {
+                var user = await _context.Users.FindAsync(userId);
+                if (user != null)
+                {
+                    _context.Users.Remove(user);
+                    await _context.SaveChangesAsync();
+                }
+            }
 
             return RedirectToAction("Index");
         }
 
-
-        // Loads the edit form with existing customer data
-        [HttpGet]
-        public async Task<IActionResult> Edit(string partitionKey, string rowKey)
-        {
-            var customer = await _customerService.GetEntityAsync(partitionKey, rowKey);
-            if (customer == null)
-                return NotFound();
-
-            return View(customer);
-        }
-
-
-        // Saves changes made to an existing 
-        [HttpPost]
-        public async Task<IActionResult> Edit(Customer updatedCustomer)
-        {
-            var existing = await _customerService.GetEntityAsync("Customer", updatedCustomer.RowKey);
-            if (existing == null)
-                return NotFound();
-
-            existing.FullName = updatedCustomer.FullName;
-            existing.Email = updatedCustomer.Email;
-            existing.PhoneNumber = updatedCustomer.PhoneNumber;
-            existing.Address = updatedCustomer.Address;
-
-            existing.DateOfBirth = DateTime.SpecifyKind(updatedCustomer.DateOfBirth.DateTime, DateTimeKind.Utc);
-
-            await _customerService.UpdateEntityAsync(existing);
-            return RedirectToAction("Index");
-        }
-
-
-        // Deletes a customer by partition and row key
-        [HttpGet]
-        public async Task<IActionResult> Delete(string partitionKey, string rowKey)
-        {
-            var existing = await _customerService.GetEntityAsync(partitionKey, rowKey);
-            if (existing == null)
-                return NotFound();
-
-            await _customerService.DeleteEntityAsync(partitionKey, rowKey);
-            return RedirectToAction("Index");
-        }
     }
 }
+

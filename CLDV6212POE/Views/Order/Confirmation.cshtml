@@ -1,0 +1,21 @@
+﻿@model CLDV6212POE.Models.Order
+
+<div class="confirmation-container">
+    <div class="confirm-order-container">
+        <img src="https://st10265742cldv6212.blob.core.windows.net/background/orderlogo.png" alt="Order Success" />
+        <h3 class="confirm-header">Thank you, we've received your order @Model.CustomerName!</h3>
+        <p class="confirm-subheader">Your order has been placed successfully.</p>
+
+        <div class="button-group">
+            <a asp-controller="Order" asp-action="Index" class="order-btn">Go to Orders</a>
+            <a asp-controller="Product" asp-action="Index" class="shop-btn">Continue Shopping</a>
+        </div>
+    </div>
+</div>
+
+
+<footer class="footer-container">
+    <p class="footer-main">&copy; 2025 ABC Retail</p>
+    <p class="footer-sub">Built by <span>Josh Roberts</span></p>
+</footer>
+ 

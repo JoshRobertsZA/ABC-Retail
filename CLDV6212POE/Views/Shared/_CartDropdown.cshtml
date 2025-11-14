@@ -1,0 +1,24 @@
+﻿@model List<CLDV6212POE.Models.Cart>
+
+@if (!Model.Any())
+{
+    <div class="p-3 text-center text-muted">Your cart is empty.</div>
+}
+else
+{
+    <ul class="list-group list-group-flush">
+        @foreach (var item in Model)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@item.ProductName</strong><br/>
+                    <small>Qty: @item.Quantity</small>
+                </div>
+                <span>R @(item.ProductPrice * item.Quantity)</span>
+            </li>
+        }
+    </ul>
+    <div class="p-2 text-center">
+        <a href="/Cart" class="btn btn-success btn-sm">View Cart</a>
+    </div>
+}

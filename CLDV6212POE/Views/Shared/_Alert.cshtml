@@ -1,0 +1,64 @@
+﻿@using System.Text.Json
+@using CLDV6212POE.ViewModel
+@{
+    AlertViewModel alert = null;
+
+    if (TempData["Alert"] != null)
+    {
+        alert = JsonSerializer.Deserialize<AlertViewModel>(TempData["Alert"].ToString());
+    }
+
+    <link rel="stylesheet" href="~/css/alert.css" asp-append-version="true" />
+}
+
+@if (alert != null)
+{
+    <div class="alert @(alert.Type)" id="alert-toast">
+        <div class="check">
+            @if (alert.Type == "success")
+            {
+                <i class="fa-solid fa-check"></i>
+            }
+            else if (alert.Type == "error")
+            {
+
+                <i class="fa-solid fa-xmark"></i>
+            }
+            else if (alert.Type == "warning")
+            {
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            }
+        </div>
+        <div class="message">
+            <span class="text-1">@alert.Title</span>
+            <span class="text-2">@alert.Message</span>
+        </div>
+        <i class="fa-solid fa-xmark close" onclick="this.parentElement.remove()"></i>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const alertEl = document.getElementById("alert-toast");
+            if (alertEl) {
+                void alertEl.offsetWidth;
+                alertEl.classList.add("show");
+                setTimeout(() => {
+                    alertEl.classList.remove("show");
+                    alertEl.classList.add("hide");
+                    setTimeout(() => alertEl.remove(), 500);
+                }, 5000);
+            }
+        });
+    </script>
+}
+
+
+<!--
+*     AI Assistance on logic behind Alert
+*     Website: https://chatgpt.com/share/68c7d92f-9aac-8004-a5fe-154292fe7974
+*     Author/Tool: OpenAI ChatGPT
+*     Description: Assisted me in fixing my alert logic
+*     Usage: _Alert.cshtml, lines 17-56
+*     Accessed: 8 September 2025
+-->

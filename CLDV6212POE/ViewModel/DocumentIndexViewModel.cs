@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace CLDV6212POE.ViewModel
+﻿namespace CLDV6212POE.ViewModel
 {
     public class DocumentIndexViewModel
     {

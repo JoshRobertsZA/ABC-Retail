@@ -1,5 +1,6 @@
-﻿using CLDV6212POE.Services;
-using Function.Models;
+﻿using Azure.Data.Tables;
+using CLDV6212POE.Models;
+using CLDV6212POE.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CLDV6212POE.Controllers
@@ -9,8 +10,10 @@ namespace CLDV6212POE.Controllers
         private readonly TableStorageService<Product> _productService;
         private readonly FunctionConnector _functionConnector;
         private readonly ILogger<ProductController> _logger;
+        private readonly IConfiguration _config;
 
         public ProductController(
+            IConfiguration config,
             TableStorageService<Product> productService,
             FunctionConnector functionConnector,
             ILogger<ProductController> logger)
@@ -18,19 +21,98 @@ namespace CLDV6212POE.Controllers
             _productService = productService;
             _functionConnector = functionConnector;
             _logger = logger;
+            _config = config;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search = null)
         {
             var products = await _productService.GetAllEntitiesAsync();
-            return View(products ?? new List<Product>());
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                products = products
+                    .Where(p =>
+                        (!string.IsNullOrEmpty(p.ProductName) && p.ProductName.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(p.Category) && p.Category.Contains(search, StringComparison.OrdinalIgnoreCase))
+                    )
+                    .ToList();
+            }
+
+            ViewData["SearchQuery"] = search;
+
+            return View(products);
         }
+
+
+        public async Task<IActionResult> Search(string q)
+        {
+            var products = await _productService.GetAllEntitiesAsync();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                q = q.ToLower();
+
+                products = products
+                    .Where(p =>
+                        (!string.IsNullOrEmpty(p.ProductName) && p.ProductName.ToLower().Contains(q)) ||
+                        (!string.IsNullOrEmpty(p.Category) && p.Category.ToLower().Contains(q))
+                    )
+                    .ToList();
+            }
+
+            return PartialView("_ProductListPartial", products);
+        }
+
+
+        private decimal ParsePrice(string price)
+        {
+            if (string.IsNullOrWhiteSpace(price)) return 0;
+
+            // Remove anything except digits and decimal point
+            var clean = new string(price.Where(c => char.IsDigit(c) || c == '.').ToArray());
+            return decimal.TryParse(clean, out var val) ? val : 0;
+        }
+
+
+        public async Task<IActionResult> Sort(string sortType, string q)
+        {
+            var products = await _productService.GetAllEntitiesAsync();
+
+            // Apply search if text present
+            if (!string.IsNullOrEmpty(q))
+            {
+                products = products
+                    .Where(p => p.ProductName.Contains(q, StringComparison.OrdinalIgnoreCase)
+                                || p.Category.Contains(q, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            // Apply numeric sorting
+            switch (sortType)
+            {
+                case "hightolow":
+                    products = products
+                        .OrderByDescending(p => ParsePrice(p.Price))
+                        .ToList();
+                    break;
+
+                case "lowtohigh":
+                    products = products
+                        .OrderBy(p => ParsePrice(p.Price))
+                        .ToList();
+                    break;
+            }
+
+            return PartialView("_ProductListPartial", products);
+        }
+
 
         [HttpGet]
         public IActionResult Add()
         {
             return View(new Product());
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Add(
@@ -43,12 +125,12 @@ namespace CLDV6212POE.Controllers
         {
             if (string.IsNullOrWhiteSpace(productName) ||
                 string.IsNullOrWhiteSpace(description) ||
-                string.IsNullOrWhiteSpace(price) ||
                 string.IsNullOrWhiteSpace(category))
             {
                 ModelState.AddModelError(string.Empty, "All fields are required.");
                 return View(new Product());
             }
+
 
             string? imageUrl = null;
             if (image is { Length: > 0 })
@@ -94,6 +176,43 @@ namespace CLDV6212POE.Controllers
 
 
         [HttpGet]
+        public async Task<IActionResult> Details(string rowKey)
+        {
+            if (string.IsNullOrEmpty(rowKey))
+                return BadRequest("RowKey is required.");
+
+            try
+            {
+                string connectionString = _config.GetConnectionString("AzureStorage");
+
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    return StatusCode(500, "Storage configuration is missing.");
+                }
+
+                var tableClient = new TableClient(connectionString, "Product");
+
+                Product? product = null;
+                await foreach (var entity in tableClient.QueryAsync<Product>(p => rowKey != null && p.RowKey == rowKey))
+                {
+                    product = entity;
+                    break;
+                }
+
+                if (product == null)
+                    return NotFound("Product not found.");
+
+                return PartialView("_ProductDetail", product);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving product details for RowKey: {RowKey}", rowKey);
+                return StatusCode(500, "An error occurred while fetching the product details.");
+            }
+        }
+
+
+        [HttpGet]
         public async Task<IActionResult> Edit(string rowKey)
         {
             var product = await _productService.GetEntityAsync("Product", rowKey);
@@ -103,6 +222,7 @@ namespace CLDV6212POE.Controllers
             return View(product);
         }
 
+
         [HttpPost]
         public async Task<IActionResult> Edit(Product updatedProduct, IFormFile? image)
         {
@@ -111,10 +231,15 @@ namespace CLDV6212POE.Controllers
                 return NotFound();
 
             existing.ProductName = updatedProduct.ProductName;
+            existing.Category = updatedProduct.Category;
             existing.Description = updatedProduct.Description;
             existing.Price = updatedProduct.Price;
-            existing.Category = updatedProduct.Category;
+            existing.CreatedDate = DateTime.SpecifyKind(existing.CreatedDate, DateTimeKind.Utc);
             existing.StockQuantity = updatedProduct.StockQuantity;
+
+            if (existing.CreatedDate == default)
+                existing.CreatedDate = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc);
+
 
             if (image != null && image.Length > 0)
             {
@@ -139,19 +264,21 @@ namespace CLDV6212POE.Controllers
                 }
             }
 
-            await _productService.UpdateEntityAsync(existing);
+            await _productService.UpdateEntityAsync(existing, existing.PartitionKey, existing.RowKey);
+
 
             return RedirectToAction("Index");
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Delete(string rowKey)
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(string id)
         {
-            var existing = await _productService.GetEntityAsync("Product", rowKey);
+            var existing = await _productService.GetEntityAsync("Product", id);
             if (existing == null)
                 return NotFound();
 
-            await _productService.DeleteEntityAsync("Product", rowKey);
+            await _productService.DeleteEntityAsync("Product", id);
             return RedirectToAction("Index");
         }
     }

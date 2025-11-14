@@ -15,9 +15,15 @@ public class DocumentController : Controller
         _fileStorageService = fileStorageService;
     }
 
+
     [HttpGet]
     public async Task<IActionResult> Index()
     {
+        var role = HttpContext.Session.GetString("UserRole");
+
+        if (role != "Admin")
+            return Unauthorized();
+
         var model = new DocumentIndexViewModel
         {
             UploadModel = new FileUploadViewModel(),
@@ -26,9 +32,15 @@ public class DocumentController : Controller
         return View(model);
     }
 
+
     [HttpPost]
     public async Task<IActionResult> Index(FileUploadViewModel uploadModel)
     {
+        var role = HttpContext.Session.GetString("UserRole");
+
+        if (role != "Admin")
+            return Unauthorized();
+
         var model = new DocumentIndexViewModel
         {
             UploadModel = uploadModel,
@@ -60,13 +72,24 @@ public class DocumentController : Controller
 
     public async Task<IActionResult> Download(string fileName)
     {
+        var role = HttpContext.Session.GetString("UserRole");
+
+        if (role != "Admin")
+            return Unauthorized();
+
         var stream = await _fileStorageService.DownloadFileAsync(fileName);
         return File(stream, "application/octet-stream", fileName);
     }
 
+
     [HttpPost]
     public async Task<IActionResult> Delete(string fileName)
     {
+        var role = HttpContext.Session.GetString("UserRole");
+
+        if (role != "Admin")
+            return Unauthorized();
+
         await _fileStorageService.DeleteFileAsync(fileName);
         return RedirectToAction("Index");
     }

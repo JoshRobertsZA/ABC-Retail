@@ -1,43 +1,50 @@
 ﻿@model CLDV6212POE.ViewModel.DocumentIndexViewModel
 
+
 <div class="document">
     <div class="document-container">
         <div class="content-wrapper">
-            <h2>Contracts</h2>
+            <h2 class="document-header-text">Contracts</h2>
 
-            <form asp-action="Index" method="post" enctype="multipart/form-data">
-                <input asp-for="UploadModel.File" type="file"/>
-                <span asp-validation-for="UploadModel.File" class="text-danger"></span>
-                <button type="submit">Upload</button>
+            <form asp-action="Index" method="post" enctype="multipart/form-data" class="upload-form">
+                <input asp-for="UploadModel.File" type="file" class="file-input"/>
+                <button type="submit" class="btn-upload">Upload</button>
             </form>
 
             @if (!string.IsNullOrEmpty(Model.UploadModel.Message))
             {
-                <div style="color:@(Model.UploadModel.Message.Contains("success") ? "green" : "red")">
+                <div class="upload-message @(Model.UploadModel.Message.Contains("success") ? "success" : "error")">
                     @Model.UploadModel.Message
                 </div>
             }
 
-            <h3>Available Contracts</h3>
+            <h3 class="document-subheader-text">Available Contracts</h3>
             <ul>
                 @foreach (var file in Model.Files)
                 {
-                    <li style="display: flex; align-items: center; gap: 10px;">
-                        <span>@file</span>
-
-                        <div style="display: flex; gap: 10px;">
+                    <li>
+                        <span class="file-name">@file</span>
+                        <div class="file-actions">
                             <a href="#"
+                               class="delete-link"
                                onclick="event.preventDefault(); if(confirm('Are you sure you want to delete this file?')) { document.getElementById('delete-@file').submit(); }">
                                 Delete
                             </a>
                             <form id="delete-@file" asp-action="Delete" method="post" asp-route-fileName="@file" style="display:none;"></form>
 
-                            <a asp-action="Download" asp-route-fileName="@file">Download</a>
-
+                            <a asp-action="Download" asp-route-fileName="@file" class="download-link">Download</a>
                         </div>
                     </li>
                 }
             </ul>
         </div>
     </div>
+</div>
+
+<!-- Footer -->
+<div class="footer-container">
+    <footer class="footer-text">
+        <p class="footer-main">&copy; 2025 ABC Retail</p>
+        <p class="footer-sub">Built by <span>Josh Roberts</span></p>
+    </footer>
 </div>

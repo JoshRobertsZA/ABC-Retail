@@ -1,0 +1,50 @@
+﻿@model CLDV6212POE.Models.Product
+
+<div class="modal fade product-detail-modal" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content pdm-content shadow-lg border-0 rounded-4">
+            <div class="modal-body pdm-body position-relative">
+
+                <button type="button" class="btn-close pdm-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                <div class="row align-items-center">
+                    <div class="col-md-5 text-center">
+                        <img src="@(!string.IsNullOrEmpty(Model.ImageUrl) ? Model.ImageUrl : "/product1.png")"
+                             alt="@Model.ProductName"
+                             class="img-fluid pdm-image rounded-3"/>
+                    </div>
+
+                    <div class="col-md-7 pdm-info">
+                        <h4 class="fw-bold pdm-title">@Model.ProductName</h4>
+                        <h4 class="fw-bold pdm-description">@Model.Description</h4>
+
+                        <p class="product-detail-modal pdm-stock">In Stock</p>
+
+                        <ul class="list-group list-group-flush mb-3 pdm-list">
+                            <li class="list-group-item d-flex justify-content-between pdm-list-item">
+                                <strong>Price:</strong>
+                                <span>@Model.Price</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between pdm-list-item">
+                                <strong>Brand</strong>
+                                <span>@Model.Category</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between pdm-list-item">
+                                <strong>Stock:</strong>
+                                <span>@Model.StockQuantity</span>
+                            </li>
+                        </ul>
+
+                        <button class="btn pdm-btn-cart w-100 mt-3 add-to-cart-btn"
+                                data-product-id="@Model.RowKey"
+                                data-product-name="@Model.ProductName"
+                                data-image-url="@Model.ImageUrl"
+                                data-price="@(Model.Price.Replace("R", "").Replace(",", "").Trim())">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,25 +1,150 @@
-﻿@{
+﻿@model CLDV6212POE.ViewModels.HomeViewModel
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="home">
-    <div class="home-container">
-        <video autoplay muted loop id="background-video">
-            <source src="https://st10265742cldv6212.blob.core.windows.net/background/background.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
 
-        <div class="overlay">
-            <div class="content text-center">
-                <h1>ABC Retail</h1>
-                <p>Smart Storage. Seamless Shopping. Scalable Solutions</p>
-                <a asp-controller="Customer" asp-action="Index" class="btn btn-primary btn-lg">
-                    Customer Profiles
-                </a>
-                <a asp-controller="Product" asp-action="Index" class="btn btn-primary btn-lg">
-                    Product Information
-                </a>
+    <!-- Search Bar Section -->
+    <div class="search-section">
+        <div class="container">
+            <form method="get" asp-controller="Home" asp-action="Index">
+                <div class="search-box">
+                    <input id="homeSearchInput" type="text" name="search"
+                           placeholder="Search for products, brands..." />
+                    <button id="homeSearchBtn" type="submit"><i class="fa fa-search"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Promo Section -->
+    <section class="promo-section">
+        <div id="promoCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item">
+                    <img src="https://st10265742cldv6212.blob.core.windows.net/brandlogos/nike-promo.jpg" class="d-block w-100" alt="Nike Promo">
+                </div>
+                <div class="carousel-item">
+                    <img src="https://st10265742cldv6212.blob.core.windows.net/brandlogos/adidas-promo.jpg" class="d-block w-100" alt="Adidas Promo">
+                </div>
+                <div class="carousel-item active">
+                    <img src="https://st10265742cldv6212.blob.core.windows.net/brandlogos/asics-promo.jpg" class="d-block w-100" alt="Asics Promo">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Brands -->
+    <div class="latest-products">
+        <p>Popular Brands</p>
+        <div class="slider-container">
+            <div class="slider-track">
+                <div class="slide"><img class="promo-img-container" src="https://st10265742cldv6212.blob.core.windows.net/brandlogos/nike.jpg" alt="Nike"></div>
+                <div class="slide"><img class="promo-img-container" src="https://st10265742cldv6212.blob.core.windows.net/brandlogos/adidas.jpg" alt="Adidas"></div>
+                <div class="slide"><img class="promo-img-container" src="https://st10265742cldv6212.blob.core.windows.net/brandlogos/puma.jpg" alt="Puma"></div>
+                <div class="slide"><img class="promo-img-container" src="https://st10265742cldv6212.blob.core.windows.net/brandlogos/converse.jpg" alt="Converse"></div>
+                <div class="slide"><img class="promo-img-container" src="https://st10265742cldv6212.blob.core.windows.net/brandlogos/vans.jpg" alt="Vans"></div>
             </div>
         </div>
     </div>
+
+    <!-- Products -->
+    <div class="product-section">
+
+        <div class="promo-product-1">
+            <p>Hurry! These are Selling Fast</p>
+        </div>
+
+        <!-- Popular Products -->
+        <div class="product-slider-container">
+            <button class="product-btn product-prev" onclick="productSlide('product-slider-1', -1)">&#10094;</button>
+
+            <div class="product-slider" id="product-slider-1">
+                @foreach (var product in Model.PopularProducts)
+                {
+                    <div class="product-card">
+                        <div class="product-page-card-body"
+                             data-bs-toggle="modal"
+                             data-bs-target="#productDetailModal"
+                             data-rowkey="@product.RowKey"
+                             style="cursor: pointer;">
+                            <img src="@(product.ImageUrl)"
+                                 alt="@product.ProductName">
+                            <div class="product-info">
+                                <h3>@product.ProductName</h3>
+                                <p class="product-brand">@product.Category</p>
+                                <p class="product-price">@product.Price</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+
+            <button class="product-btn product-next" onclick="productSlide('product-slider-1', 1)">&#10095;</button>
+        </div>
+        
+        <div class="promo-product-1"> <p>Popular with Emeris Students!</p> </div>
+
+        <!-- New Arrivals -->
+        <div class="product-slider-container">
+            <button class="product-btn product-prev" onclick="productSlide('product-slider-2', -1)">&#10094;</button>
+
+            <div class="product-slider" id="product-slider-2">
+                @foreach (var product in Model.NewArrivals)
+                {
+                    <div class="product-card">
+                        <div class="product-page-card-body"
+                             data-bs-toggle="modal"
+                             data-bs-target="#productDetailModal"
+                             data-rowkey="@product.RowKey"
+                             style="cursor: pointer;">
+                            <img src="@(product.ImageUrl)"
+                                 alt="@product.ProductName">
+                            <div class="product-info">
+                                <h3>@product.ProductName</h3>
+                                <p class="product-brand">@product.Category</p>
+                                <p class="product-price">@product.Price</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <button class="product-btn product-next" onclick="productSlide('product-slider-2', 1)">&#10095;</button>
+        </div>
+        
+        <!-- Product Details Modal -->
+        <div id="productDetailContainer"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-container">
+        <footer class="footer-text">
+            <p class="footer-main">&copy; 2025 ABC Retail</p>
+            <p class="footer-sub">Built by <span>Josh Roberts</span></p>
+        </footer>
+    </div>
+
 </div>
+
+<script>
+    // Slider function with unique slider ID
+    function productSlide(sliderId, direction) {
+        const productSlider = document.getElementById(sliderId);
+        if (!productSlider) return;
+        const scrollAmount = 250;
+        productSlider.scrollBy({
+            left: direction * scrollAmount,
+            behavior: 'smooth'
+        });
+    }
+</script>
+
+@section Scripts {
+    <script src="~/js/product.js"></script>
+    <script src="~/js/homesearch.js"></script>
+}

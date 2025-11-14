@@ -1,0 +1,103 @@
+﻿@model CLDV6212POE.ViewModel.OrderViewModel
+@{
+    var userRole = Context.Session.GetString("UserRole");
+}
+
+
+<div class="modal fade" id="orderModal-@Model.RowKey" tabindex="-1" aria-labelledby="orderModalLabel-@Model.RowKey" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+
+            <!-- Header -->
+            <div class="modal-header bg-success text-white rounded-top-4">
+                @if (userRole == "Admin")
+                {
+                    <h5 class="modal-title" id="orderModalLabel-@Model.RowKey">@Model.CustomerName's Order</h5>
+                }
+                else
+                {
+                    <h5 class="modal-title" id="orderModalLabel-@Model.RowKey">My Order</h5>
+                }
+
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+                <div class="row align-items-center">
+                    <div class="col-md-4 text-center">
+                        <div class="order-image-wrapper">
+                            <img src="@Model.ImageUrl" alt="@Model.ProductName" class="order-image"/>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div class="order-details-info">
+                            <h5 class="order-product-name">@Model.ProductName</h5>
+
+                            <div class="order-details-grid">
+                                <p>
+                                    <span class="label">Product ID:</span> <span class="value">@Model.ProductID</span>
+                                </p>
+                                <p>
+                                    <span class="label">Customer ID:</span> <span class="value">@Model.CustomerId</span>
+                                </p>
+                                <p>
+                                    <span class="label">Quantity:</span> <span class="value">@Model.Quantity</span>
+                                </p>
+                                <p>
+                                    <span class="label">Price:</span> <span class="value">@Model.Price</span>
+                                </p>
+                                <p>
+                                    <span class="label">Status:</span>
+                                    @{
+                                        string statusClass = Model.QueueStatus switch
+                                        {
+                                            "Completed" => "completed",
+                                            "Processing" => "processed",
+                                            _ => "pending"
+                                        };
+                                    }
+                                    <span class="status-badge @statusClass">@Model.QueueStatus</span>
+                                </p>
+                                <p>
+                                    <span class="label">Order Date:</span> <span class="value">@Model.OrderDate</span>
+                                </p>
+                            </div>
+                        </div>
+
+
+                        @if (userRole == "Admin")
+                        {
+                            <div class="order-actions">
+                                @if (Model.QueueStatus == "Pending")
+                                {
+                                    <form asp-action="UpdateStatus" asp-controller="Order" method="post" class="d-inline">
+                                        <input type="hidden" name="rowKey" value="@Model.RowKey"/>
+                                        <input type="hidden" name="newStatus" value="Processing"/>
+                                        <button type="submit" class="order-btn process">Process Order</button>
+                                    </form>
+
+                                    <form asp-action="UpdateStatus" asp-controller="Order" method="post" class="d-inline">
+                                        <input type="hidden" name="rowKey" value="@Model.RowKey"/>
+                                        <input type="hidden" name="newStatus" value="Completed"/>
+                                        <button type="submit" class="order-btn complete">Complete Order</button>
+                                    </form>
+                                }
+                                else
+                                    @if (Model.QueueStatus == "Processing")
+                                {
+                                    <form asp-action="UpdateStatus" asp-controller="Order" method="post" class="d-inline">
+                                        <input type="hidden" name="rowKey" value="@Model.RowKey"/>
+                                        <input type="hidden" name="newStatus" value="Completed"/>
+                                        <button type="submit" class="order-btn complete">Complete Order</button>
+                                    </form>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,70 @@
+﻿.customer .customer-container {
+    background-color: #CED5DF;
+    padding-top: 100px;
+    width: 100%;
+    height: 100vh;
+}
+
+.customer-queue-title {
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
+    color: black;
+    position: relative;
+    left: 980px;
+}
+
+.customer .table {
+    background-color: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.customer .customer-container table th {
+    color: white;
+}
+
+.customer .customer-container table td {
+    color: black;
+}
+
+.customer thead th {
+    background-color: #212529;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.customer tbody tr {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    transition: background-color 0.3s;
+}
+
+    .customer tbody tr:hover {
+        background-color: #e2e6ea;
+    }
+
+.customer .btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.customer .btn-danger {
+    background-color: #dc3545;
+    border: none;
+}
+
+.customer .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.customer .btn-danger:hover {
+    background-color: #c82333;
+}
+
+.customer .btn {
+    padding: 5px 12px;
+    font-size: 14px;
+    border-radius: 5px;
+}
