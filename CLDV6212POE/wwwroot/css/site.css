@@ -2,7 +2,6 @@
     scrollbar-gutter: stable;
 }
 
-/* General Styles */
 html, body {
     box-sizing: border-box;
     height: 100%;
@@ -43,7 +42,6 @@ html, body {
     max-width: 1100px;
 }
 
-/* === Left Panel === */
 .ap-left {
     flex: 1;
     display: flex;
@@ -86,7 +84,6 @@ html, body {
     margin-top: 10px;
 }
 
-/* === Right Panel === */
 .ap-right {
     flex: 2;
 }

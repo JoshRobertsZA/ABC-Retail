@@ -1,10 +1,8 @@
-﻿/* Search Bar Styling */
-.search-section {
+﻿.search-section {
     background-color: #70aa93;
     padding: 12px 0;
 }
 
-/* Search box */
 .search-box {
     max-width: 1000px;
     margin: 0 auto;
@@ -30,7 +28,6 @@
         font-size: 16px;
     }
 
-/* Category menu */
 .category-bar {
     background-color: #70aa93;
     display: flex;

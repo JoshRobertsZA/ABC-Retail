@@ -6,6 +6,7 @@ using Azure.Data.Tables;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Encryption Service
 builder.Services.AddSingleton<EncryptionService>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
@@ -14,11 +15,11 @@ builder.Services.AddSingleton<EncryptionService>(sp =>
     return new EncryptionService(hexKey, hexIV);
 });
 
-
+// Config (Azure SQL Database)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AzureDatabase")));
 
-// Config
+// Config (Azure Storage)
 var azureConnStr = builder.Configuration.GetConnectionString("AzureStorage");
 
 // MVC Controllers + Views

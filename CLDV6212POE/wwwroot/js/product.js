@@ -1,6 +1,6 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
 
-    // Product Detail Modal (Index.cshtml)
+    // Product Detail Modal
     const modalContainer = document.getElementById("productDetailContainer");
     if (modalContainer) {
         document.querySelectorAll(".product-page-card-body").forEach(cardBody => {
@@ -54,7 +54,7 @@
         });
     }
 
-    // Image Preview (Add/Edit Product)
+    // Image Preview
     const imageInput = document.getElementById('imageInput');
     const imagePreview = document.getElementById('imagePreview');
 

@@ -24,6 +24,7 @@ namespace CLDV6212POE.Controllers
             _config = config;
         }
 
+        // Displays all products and applies optional search filtering.
         public async Task<IActionResult> Index(string? search = null)
         {
             var products = await _productService.GetAllEntitiesAsync();
@@ -44,6 +45,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Performs AJAX-based search and returns a filtered product list partial.
         public async Task<IActionResult> Search(string q)
         {
             var products = await _productService.GetAllEntitiesAsync();
@@ -64,6 +66,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Converts price strings to numeric values for sorting.
         private decimal ParsePrice(string price)
         {
             if (string.IsNullOrWhiteSpace(price)) return 0;
@@ -74,6 +77,8 @@ namespace CLDV6212POE.Controllers
         }
 
 
+
+        // Sorts products by price (high-to-low or low-to-high) and returns an updated partial view.
         public async Task<IActionResult> Sort(string sortType, string q)
         {
             var products = await _productService.GetAllEntitiesAsync();
@@ -107,6 +112,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Handles product creation, including optional blob image upload.
         [HttpGet]
         public IActionResult Add()
         {
@@ -175,6 +181,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Retrieves a single product and returns the product details modal partial.
         [HttpGet]
         public async Task<IActionResult> Details(string rowKey)
         {
@@ -212,6 +219,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Returns the edit page for a selected product.
         [HttpGet]
         public async Task<IActionResult> Edit(string rowKey)
         {
@@ -223,6 +231,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Processes product updates, including replacing the product image via Azure Blob.
         [HttpPost]
         public async Task<IActionResult> Edit(Product updatedProduct, IFormFile? image)
         {
@@ -271,6 +280,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Deletes a product from Azure Table Storage.
         [HttpPost]
         public async Task<IActionResult> Delete(string id)
         {

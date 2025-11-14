@@ -24,7 +24,6 @@
     box-shadow: 0 1px 5px rgba(0,0,0,0.05);
 }
 
-/* Header */
 .order-header {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
@@ -43,7 +42,6 @@
     right: 50px
 }
 
-/* Order Row */
 .order-item {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
@@ -57,7 +55,6 @@
         background-color: #faf7ff;
     }
 
-/* Product Section */
 .product-info {
     display: flex;
     align-items: center;
@@ -83,7 +80,6 @@
     color: #777;
 }
 
-/* Other columns */
 .product-code, .quantity, .price {
     color: #555;
     font-weight: 500;
@@ -95,7 +91,6 @@
     font-weight: 600;
 }
 
-/* Status Badge */
 .status-badge {
     padding: 6px 12px;
     border-radius: 20px;
@@ -121,8 +116,6 @@
         color: #212121;
     }
 
-
-/* Order Details Modal */
 .order-image-wrapper {
     display: flex;
     justify-content: center;

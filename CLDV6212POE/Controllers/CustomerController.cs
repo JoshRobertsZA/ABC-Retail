@@ -13,8 +13,6 @@ namespace CLDV6212POE.Controllers
         private readonly FunctionConnector _functionConnector;
         private readonly AppDbContext _context;
 
-
-        // Injected service for Azure Table Storage operations
         public CustomerController(TableStorageService<Customer> customerService,
             FunctionConnector functionConnector, AppDbContext context)
         {
@@ -63,6 +61,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Displays all customer-related queue messages (Admin only)
         public async Task<IActionResult> ViewCustomerQueue()
         {
             var role = HttpContext.Session.GetString("UserRole");
@@ -75,6 +74,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Deletes a customer from both Azure Table Storage and SQL Database (Admin only)
         [HttpGet]
         public async Task<IActionResult> Delete(string customerPartitionKey)
         {

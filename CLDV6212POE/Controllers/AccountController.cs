@@ -25,7 +25,23 @@ namespace CLDV6212POE.Controllers
             _logger = logger;
         }
 
+        public class RegisterRequest
+        {
+            public string Name { get; set; }
+            public string Email { get; set; }
+            public string Password { get; set; }
+        }
 
+        public class LoginRequest
+        {
+            public string Email { get; set; }
+            public string Password { get; set; }
+            public string ReturnUrl { get; set; }
+        }
+
+
+        // Handles user login: validates credentials, decrypts password, 
+        // checks role, stores session values, and returns redirect info.
         [HttpPost]
         public IActionResult Login([FromBody] LoginRequest model)
         {
@@ -82,6 +98,8 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Handles user registration: encrypts password, saves SQL user, 
+        // assigns Customer role, creates customer entity, and sends it to Azure Function.
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] RegisterRequest model)
         {
@@ -111,7 +129,7 @@ namespace CLDV6212POE.Controllers
             _context.Users.Add(user);
             _context.SaveChanges();
 
-            // Assign "Customer" role
+            // Assign Role
             var customerRole = _context.Roles.FirstOrDefault(r => r.RoleName == "Customer");
             if (customerRole != null)
             {
@@ -162,22 +180,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
-        public class RegisterRequest
-        {
-            public string Name { get; set; }
-            public string Email { get; set; }
-            public string Password { get; set; }
-        }
-
-
-        public class LoginRequest
-        {
-            public string Email { get; set; }
-            public string Password { get; set; }
-            public string ReturnUrl { get; set; }
-        }
-
-
+        // Logs out the user: clears session and returns a logout confirmation alert.
         [HttpPost]
         public IActionResult Logout()
         {

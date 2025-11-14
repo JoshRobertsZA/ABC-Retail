@@ -15,7 +15,7 @@ public class DocumentController : Controller
         _fileStorageService = fileStorageService;
     }
 
-
+    // Displays uploaded files and the upload form (Admin only)
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -33,6 +33,7 @@ public class DocumentController : Controller
     }
 
 
+    // Handles file upload via Azure Function and refreshes file list (Admin only)
     [HttpPost]
     public async Task<IActionResult> Index(FileUploadViewModel uploadModel)
     {
@@ -70,6 +71,7 @@ public class DocumentController : Controller
     }
 
 
+    // Downloads a selected file from Azure Blob Storage (Admin only)
     public async Task<IActionResult> Download(string fileName)
     {
         var role = HttpContext.Session.GetString("UserRole");
@@ -82,6 +84,7 @@ public class DocumentController : Controller
     }
 
 
+    // Deletes a file from Azure Blob Storage (Admin only)
     [HttpPost]
     public async Task<IActionResult> Delete(string fileName)
     {

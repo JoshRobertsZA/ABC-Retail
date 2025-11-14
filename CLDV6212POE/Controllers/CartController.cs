@@ -15,6 +15,7 @@ public class CartController : Controller
 
     }
 
+    // Displays the logged-in user's cart items from Azure Table Storage.
     public async Task<IActionResult> Index()
     {
         var userId = HttpContext.Session.GetString("UserId");
@@ -30,6 +31,7 @@ public class CartController : Controller
     }
 
 
+    // Adds a product to the logged-in user's cart and stores it in Azure Table Storage.
     [HttpPost]
     public async Task<IActionResult> AddToCart(string productId, string productName, string imageUrl, decimal price)
     {
@@ -61,6 +63,7 @@ public class CartController : Controller
     }
 
 
+    // Returns all cart items for the logged-in user as JSON (for AJAX updates).
     [HttpGet]
     public async Task<IActionResult> GetCartItems()
     {
@@ -79,6 +82,7 @@ public class CartController : Controller
     }
 
 
+    // Removes a specific product from the user's cart using PartitionKey + RowKey.
     [HttpPost]
     public async Task<IActionResult> RemoveFromCart(string productId)
     {

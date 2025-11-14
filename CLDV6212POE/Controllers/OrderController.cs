@@ -36,6 +36,7 @@ namespace CLDV6212POE.Controllers
             _cartService = cartService;
         }
 
+        // Displays all orders. Admin sees all orders, regular users only see their own.
         public async Task<IActionResult> Index()
         {
             var userRole = HttpContext.Session.GetString("UserRole");
@@ -76,6 +77,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Creates orders from all items in the logged-in user's cart and queues them for processing.
         [HttpPost]
         public async Task<IActionResult> Create()
         {
@@ -149,6 +151,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Sends a queue message to delete a specific order entity from Azure Table Storage.
         [HttpGet]
         public async Task<IActionResult> Delete(string rowKey)
         {
@@ -172,6 +175,7 @@ namespace CLDV6212POE.Controllers
         }
 
 
+        // Updates the status of an order (Processing or Completed) and saves it back to Azure Table Storage.
         [HttpPost]
         public async Task<IActionResult> UpdateStatus(string rowKey, string newStatus)
         {
