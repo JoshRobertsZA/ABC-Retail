@@ -1,7 +1,6 @@
-# Part 2 – POE
-📺 [Video Demonstration](https://youtu.be/vCrWQM1shAI)
-
-🌐 [Link to website](https://st10265742-cldv6212.azurewebsites.net/)
+# Part 3 – POE
+[![View Documentation](https://img.shields.io/badge/Click-Website-blue?style=for-the-badge&logo=adobeacrobatreader)](https://st10265742-cldv6212.azurewebsites.net/)
+[![Part 2 demonstration](https://img.shields.io/badge/Watch-Video-red?style=for-the-badge&logo=youtube)](https://youtu.be/DeJqAxFGC2Q)
 
 Follow these steps to open and run my POE on your computer:
 
@@ -50,5 +49,16 @@ Follow these steps to open and run my POE on your computer:
 - Make sure you have the **.NET 8 SDK** installed:  
   👉 https://dotnet.microsoft.com/download/dotnet/8.0
 - Close and reopen Visual Studio if needed.
+
+---
+
+## Account Setup
+
+| Role                  | Username      | Password        |
+|-----------------------|--------------|----------------|
+| Customer 1:             | `lexputh@gmail.com`   | `Lex20319..@` |
+| Customer 2:             | `jamesg@gmail.com`| `James@02920!.`    |
+| Customer 3:             | `mathewpiere@gmail.com`    | `PiereCo231@@!`  |
+| Admin:                  | `joshua.roberts.sa@gmail.com`    | `Jos2h@cldv!`  |
 
 ---
